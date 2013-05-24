@@ -6,6 +6,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{D6B6BD71-E790-4DA2-93EE-AEFBC77A9FA1}"
 	ProjectSection(SolutionItems) = preProject
 		BUILD = BUILD
+		INSTALL = INSTALL
 		LICENSE = LICENSE
 		README = README
 	EndProjectSection

@@ -5,3 +5,5 @@ This package create two environment variables %SolutionConfigurationName%
 and %SolutionPlatformnName% before each build starts, denoting the active
 solution configuration name and platform. NB: $(builmacro) notation is not
 supported
+
+License is MIT
