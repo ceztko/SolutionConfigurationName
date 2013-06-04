@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio;
 using EnvDTE80;
+using Microsoft.Build.Evaluation;
 
 namespace SolutionConfigurationName
 {
@@ -22,8 +23,11 @@ namespace SolutionConfigurationName
             // and not UpdateSolution_StartUpdate 
             SolutionConfiguration2 configuration =
                 (SolutionConfiguration2)MainSite.DTE2.Solution.SolutionBuild.ActiveConfiguration;
-            Environment.SetEnvironmentVariable("SolutionPlatformName", configuration.PlatformName);
-            Environment.SetEnvironmentVariable("SolutionConfigurationName", configuration.Name);
+
+            ProjectCollection global = ProjectCollection.GlobalProjectCollection;
+            global.SetGlobalProperty("SolutionConfigurationName", configuration.Name);
+            global.SetGlobalProperty("SolutionPlatformName", configuration.PlatformName);
+            
             return VSConstants.S_OK;
         }
 

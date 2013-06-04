@@ -1,9 +1,8 @@
 README
 ======
 
-This package create two environment variables %SolutionConfigurationName%
-and %SolutionPlatformnName% before each build starts, denoting the active
-solution configuration name and platform. NB: $(builmacro) notation is not
-supported
+This package create two build macros $(SolutionConfigurationName)
+and &(SolutionPlatformName) before each build starts, denoting the active
+solution configuration name and platform.
 
 License is MIT
