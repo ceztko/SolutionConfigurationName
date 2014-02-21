@@ -119,6 +119,7 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="MainSite.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SolutionEvents.cs" />
     <Compile Include="UpdateSolutionEvents.cs" />
   </ItemGroup>
   <ItemGroup>

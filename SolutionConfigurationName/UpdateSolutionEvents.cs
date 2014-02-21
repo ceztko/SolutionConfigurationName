@@ -9,7 +9,7 @@ using Microsoft.Build.Evaluation;
 
 namespace SolutionConfigurationName
 {
-    public class UpdateSolutionEvents : IVsUpdateSolutionEvents
+    public class UpdateSolutionEvents : IVsUpdateSolutionEvents3, IVsUpdateSolutionEvents2
     {
         public int OnActiveProjectCfgChange(IVsHierarchy pIVsHierarchy)
         {
@@ -21,12 +21,6 @@ namespace SolutionConfigurationName
             // Contrary to what Microsoft documentation seems to allude, this is really
             // the first syncronous event that gets fired when Solution update begins,
             // and not UpdateSolution_StartUpdate 
-            SolutionConfiguration2 configuration =
-                (SolutionConfiguration2)MainSite.DTE2.Solution.SolutionBuild.ActiveConfiguration;
-
-            ProjectCollection global = ProjectCollection.GlobalProjectCollection;
-            global.SetGlobalProperty("SolutionConfigurationName", configuration.Name);
-            global.SetGlobalProperty("SolutionPlatformName", configuration.PlatformName);
             
             return VSConstants.S_OK;
         }
@@ -43,7 +37,31 @@ namespace SolutionConfigurationName
 
         public int UpdateSolution_StartUpdate(ref int pfCancelUpdate)
         {
-            // Not setting variables here, build may begin before. Also it may be asyncronous
+            // This event may be asyncronous
+            return VSConstants.S_OK;
+        }
+
+
+        public int UpdateProjectCfg_Begin(IVsHierarchy pHierProj, IVsCfg pCfgProj, IVsCfg pCfgSln, uint dwAction, ref int pfCancel)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int UpdateProjectCfg_Done(IVsHierarchy pHierProj, IVsCfg pCfgProj, IVsCfg pCfgSln, uint dwAction, int fSuccess, int fCancel)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnAfterActiveSolutionCfgChange(IVsCfg pOldActiveSlnCfg, IVsCfg pNewActiveSlnCfg)
+        {
+            // Set variables according the new active configuration
+            MainSite.SetConfigurationVariables();
+
+            return VSConstants.S_OK;
+        }
+
+        public int OnBeforeActiveSolutionCfgChange(IVsCfg pOldActiveSlnCfg, IVsCfg pNewActiveSlnCfg)
+        {
             return VSConstants.S_OK;
         }
     }
