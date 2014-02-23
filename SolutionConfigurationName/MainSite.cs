@@ -85,13 +85,7 @@ namespace SolutionConfigurationName
             using (ProjectWriteLockReleaser releaser = await service.WriteLockAsync())
             {
                 ProjectCollection collection = releaser.ProjectCollection;
-                foreach (BuildProject project in collection.LoadedProjects)
-                {
-                    await releaser.CheckoutAsync(project.FullPath);
-                }
-
                 collection.SkipEvaluation = true;
-                // CHECK-ME The lock is acquired but the following causes a deadlock
                 collection.SetGlobalProperty("SolutionConfigurationName", configuration.Name);
                 collection.SetGlobalProperty("SolutionPlatformName", configuration.PlatformName);
                 collection.SkipEvaluation = false;
