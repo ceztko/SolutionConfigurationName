@@ -13,6 +13,7 @@ using EnvDTE80;
 using Microsoft.Build.Evaluation;
 using System.Reflection;
 using Microsoft.VisualStudio.ProjectSystem;
+using BuildProject = Microsoft.Build.Evaluation.Project;
 
 namespace SolutionConfigurationName
 {
@@ -53,16 +54,16 @@ namespace SolutionConfigurationName
             Marshal.ThrowExceptionForHR(hr);
         }
 
-        public static void SetConfigurationVariables()
+        public static async void SetConfigurationVariables()
         {
             SolutionConfiguration2 configuration =
                 (SolutionConfiguration2)_DTE2.Solution.SolutionBuild.ActiveConfiguration;
 
             ProjectCollection global = ProjectCollection.GlobalProjectCollection;
-            global.DisableMarkDirty = true;
+            global.SkipEvaluation = true;
             global.SetGlobalProperty("SolutionConfigurationName", configuration.Name);
             global.SetGlobalProperty("SolutionPlatformName", configuration.PlatformName);
-            global.DisableMarkDirty = true;
+            global.SkipEvaluation = false;
 
 #if VS12
             Type type = typeof(VCProjectEngineShim);
@@ -70,19 +71,26 @@ namespace SolutionConfigurationName
             if (engine == null)
                 return;
 
+            // ProjectCollection can also be obtained with the following:
+            // ProjectCollection vccollection = (ProjectCollection)type.GetProperty("ProjectCollection", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(engine, null);
+
             IProjectLockService service = (IProjectLockService)type.GetProperty("ProjectLockService", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(engine, null);
-            // CHECK-ME How to acquire the lock?
-            //ProjectWriteLockReleaser test = await service.WriteLockAsync(ProjectLockFlags.StickyWrite);
-            //ProjectWriteLockAwaiter test2 = test.GetAwaiter();
+            using (ProjectWriteLockReleaser releaser = await service.WriteLockAsync())
+            {
+                ProjectCollection collection = releaser.ProjectCollection;
+                foreach (BuildProject project in collection.LoadedProjects)
+                {
+                    await releaser.CheckoutAsync(project.FullPath);
+                }
 
-            ProjectCollection vccollection = (ProjectCollection)type.GetProperty("ProjectCollection", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(engine, null);
-            // CHECK-ME I need to acquire the lock first
-            //vccollection.DisableMarkDirty = true;
-            //vccollection.SetGlobalProperty("SolutionConfigurationName", configuration.Name);
-            //vccollection.SetGlobalProperty("SolutionPlatformName", configuration.PlatformName);
-            //vccollection.DisableMarkDirty = false;
+                collection.SkipEvaluation = true;
+                // CHECK-ME The lock is acquired but the following causes a deadlock
+                collection.SetGlobalProperty("SolutionConfigurationName", configuration.Name);
+                collection.SetGlobalProperty("SolutionPlatformName", configuration.PlatformName);
+                collection.SkipEvaluation = false;
 
-            //test3.ReleaseAsync();
+                await releaser.ReleaseAsync();
+            }
 #endif
         }
 
