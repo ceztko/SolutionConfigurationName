@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolutionConfigurationNameVS13", "SolutionConfigurationName\SolutionConfigurationNameVS13.csproj", "{0DCCDBFC-0331-4A81-96FC-9704F703D7A8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolutionConfigurationNameVS13", "SolutionConfigurationName\SolutionConfigurationNameVS12.csproj", "{0DCCDBFC-0331-4A81-96FC-9704F703D7A8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{BB30F280-9FD5-4F5C-9B1B-93BBE536EE51}"
 	ProjectSection(SolutionItems) = preProject
