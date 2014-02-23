@@ -12,14 +12,17 @@ using EnvDTE;
 using EnvDTE80;
 using Microsoft.Build.Evaluation;
 using System.Reflection;
+#if VS12
 using Microsoft.VisualStudio.ProjectSystem;
+#endif
 using BuildProject = Microsoft.Build.Evaluation.Project;
 
 namespace SolutionConfigurationName
 {
+#if VS12
     extern alias VC;
-
     using VCProjectEngineShim=VC::Microsoft.VisualStudio.Project.VisualC.VCProjectEngine.VCProjectEngineShim;
+#endif
 
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
@@ -54,7 +57,11 @@ namespace SolutionConfigurationName
             Marshal.ThrowExceptionForHR(hr);
         }
 
+#if VS12
         public static async void SetConfigurationVariables()
+#else
+        public static void SetConfigurationVariables()
+#endif
         {
             SolutionConfiguration2 configuration =
                 (SolutionConfiguration2)_DTE2.Solution.SolutionBuild.ActiveConfiguration;
