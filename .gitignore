@@ -1,4 +1,5 @@
 *.opensdf
+*.user
 *.tmp
 *.suo
 *.ncb
