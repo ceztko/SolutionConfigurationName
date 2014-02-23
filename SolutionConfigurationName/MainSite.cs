@@ -11,9 +11,15 @@ using Microsoft.VisualStudio.Shell;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.Build.Evaluation;
+using System.Reflection;
+using Microsoft.VisualStudio.ProjectSystem;
 
 namespace SolutionConfigurationName
 {
+    extern alias VC;
+
+    using VCProjectEngineShim=VC::Microsoft.VisualStudio.Project.VisualC.VCProjectEngine.VCProjectEngineShim;
+
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     [Guid(GuidList.guidSolutionConfigurationNamePkgString)]
@@ -53,8 +59,31 @@ namespace SolutionConfigurationName
                 (SolutionConfiguration2)_DTE2.Solution.SolutionBuild.ActiveConfiguration;
 
             ProjectCollection global = ProjectCollection.GlobalProjectCollection;
+            global.DisableMarkDirty = true;
             global.SetGlobalProperty("SolutionConfigurationName", configuration.Name);
             global.SetGlobalProperty("SolutionPlatformName", configuration.PlatformName);
+            global.DisableMarkDirty = true;
+
+#if VS12
+            Type type = typeof(VCProjectEngineShim);
+            object engine = type.GetProperty("Instance", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null, null);
+            if (engine == null)
+                return;
+
+            IProjectLockService service = (IProjectLockService)type.GetProperty("ProjectLockService", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(engine, null);
+            // CHECK-ME How to acquire the lock?
+            //ProjectWriteLockReleaser test = await service.WriteLockAsync(ProjectLockFlags.StickyWrite);
+            //ProjectWriteLockAwaiter test2 = test.GetAwaiter();
+
+            ProjectCollection vccollection = (ProjectCollection)type.GetProperty("ProjectCollection", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(engine, null);
+            // CHECK-ME I need to acquire the lock first
+            //vccollection.DisableMarkDirty = true;
+            //vccollection.SetGlobalProperty("SolutionConfigurationName", configuration.Name);
+            //vccollection.SetGlobalProperty("SolutionPlatformName", configuration.PlatformName);
+            //vccollection.DisableMarkDirty = false;
+
+            //test3.ReleaseAsync();
+#endif
         }
 
         private void GetService<T>(out T service)
