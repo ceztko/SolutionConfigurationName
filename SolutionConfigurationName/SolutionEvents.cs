@@ -31,13 +31,16 @@ namespace SolutionConfigurationName
 
         public int OnAfterOpenProject(IVsHierarchy pHierarchy, int fAdded)
         {
+#if VS12
+            MainSite.EnsureVCProjectCollectionConfigured();
+#endif
             return VSConstants.S_OK;
         }
 
         public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution)
         {
             // Set variables according the just opened solution
-            MainSite.SetConfigurationVariables();
+            MainSite.SetConfigurationProperties();
 
             return VSConstants.S_OK;
         }

@@ -15,13 +15,15 @@ using System.Reflection;
 #if VS12
 using Microsoft.VisualStudio.ProjectSystem;
 #endif
-using BuildProject = Microsoft.Build.Evaluation.Project;
+
+using DTEProject = EnvDTE.Project;
 
 namespace SolutionConfigurationName
 {
 #if VS12
     extern alias VC;
     using VCProjectEngineShim=VC::Microsoft.VisualStudio.Project.VisualC.VCProjectEngine.VCProjectEngineShim;
+    using Microsoft.VisualStudio.ProjectSystem.Designers;
 #endif
 
     [PackageRegistration(UseManagedResourcesOnly = true)]
@@ -34,6 +36,14 @@ namespace SolutionConfigurationName
         private static DTE2 _DTE2;
         private static UpdateSolutionEvents _UpdateSolutionEvents;
         private static SolutionEvents _SolutionEvents;
+#if VS12
+        private static volatile bool _VCProjectCollectionLoaded;
+
+        static MainSite()
+        {
+            _VCProjectCollectionLoaded = false;
+        }
+#endif
 
         public MainSite() { }
 
@@ -57,14 +67,12 @@ namespace SolutionConfigurationName
             Marshal.ThrowExceptionForHR(hr);
         }
 
-#if VS12
-        public static async void SetConfigurationVariables()
-#else
-        public static void SetConfigurationVariables()
-#endif
+        public static void SetConfigurationProperties()
         {
             SolutionConfiguration2 configuration =
                 (SolutionConfiguration2)_DTE2.Solution.SolutionBuild.ActiveConfiguration;
+            if (configuration == null)
+                return;
 
             ProjectCollection global = ProjectCollection.GlobalProjectCollection;
             global.SkipEvaluation = true;
@@ -73,6 +81,24 @@ namespace SolutionConfigurationName
             global.SkipEvaluation = false;
 
 #if VS12
+            SetVCProjectsConfigurationProperties(configuration);
+#endif
+        }
+
+#if VS12
+        public static void EnsureVCProjectCollectionConfigured()
+        {
+            if (_VCProjectCollectionLoaded)
+                    return;
+
+            SolutionConfiguration2 configuration =
+                (SolutionConfiguration2)_DTE2.Solution.SolutionBuild.ActiveConfiguration;
+
+            SetVCProjectsConfigurationProperties(configuration);
+        }
+
+        private static async void SetVCProjectsConfigurationProperties(SolutionConfiguration2 configuration)
+        {
             Type type = typeof(VCProjectEngineShim);
             object engine = type.GetProperty("Instance", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null, null);
             if (engine == null)
@@ -90,10 +116,12 @@ namespace SolutionConfigurationName
                 collection.SetGlobalProperty("SolutionPlatformName", configuration.PlatformName);
                 collection.SkipEvaluation = false;
 
+                _VCProjectCollectionLoaded = true;
+
                 await releaser.ReleaseAsync();
             }
-#endif
         }
+#endif
 
         private void GetService<T>(out T service)
         {
