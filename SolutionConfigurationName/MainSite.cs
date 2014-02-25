@@ -14,6 +14,7 @@ using Microsoft.Build.Evaluation;
 using System.Reflection;
 #if VS12
 using Microsoft.VisualStudio.ProjectSystem;
+using BuildProject = Microsoft.Build.Evaluation.Project;
 #endif
 
 using DTEProject = EnvDTE.Project;
@@ -24,6 +25,7 @@ namespace SolutionConfigurationName
     extern alias VC;
     using VCProjectEngineShim=VC::Microsoft.VisualStudio.Project.VisualC.VCProjectEngine.VCProjectEngineShim;
     using Microsoft.VisualStudio.ProjectSystem.Designers;
+    using Microsoft.VisualStudio.VCProjectEngine;
 #endif
 
     [PackageRegistration(UseManagedResourcesOnly = true)]
@@ -86,28 +88,27 @@ namespace SolutionConfigurationName
         }
 
 #if VS12
-        public static void EnsureVCProjectCollectionConfigured()
+        public static void EnsureVCProjectsPropertiesConfigured(IVsHierarchy hiearchy)
         {
             if (_VCProjectCollectionLoaded)
-                    return;
+                return;
+
+            DTEProject project = hiearchy.GetProject();
+            if (project == null || !(project.Object is VCProject))
+                return;
 
             SolutionConfiguration2 configuration =
                 (SolutionConfiguration2)_DTE2.Solution.SolutionBuild.ActiveConfiguration;
 
-            SetVCProjectsConfigurationProperties(configuration);
+            SetVCProjectsConfigurationProperties(project, configuration);
         }
 
-        private static async void SetVCProjectsConfigurationProperties(SolutionConfiguration2 configuration)
+        private static async void SetVCProjectsConfigurationProperties(DTEProject project, SolutionConfiguration2 configuration)
         {
-            Type type = typeof(VCProjectEngineShim);
-            object engine = type.GetProperty("Instance", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null, null);
-            if (engine == null)
-                return;
+            IVsBrowseObjectContext context = project.Object as IVsBrowseObjectContext;
+            UnconfiguredProject unconfiguredProject = context.UnconfiguredProject;
+            IProjectLockService service = unconfiguredProject.ProjectService.Services.ProjectLockService;
 
-            // ProjectCollection can also be obtained with the following:
-            // ProjectCollection vccollection = (ProjectCollection)type.GetProperty("ProjectCollection", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(engine, null);
-
-            IProjectLockService service = (IProjectLockService)type.GetProperty("ProjectLockService", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(engine, null);
             using (ProjectWriteLockReleaser releaser = await service.WriteLockAsync())
             {
                 ProjectCollection collection = releaser.ProjectCollection;
@@ -121,8 +122,34 @@ namespace SolutionConfigurationName
                 await releaser.ReleaseAsync();
             }
         }
-#endif
 
+        public static void SetVCProjectsConfigurationProperties(SolutionConfiguration2 configuration)
+        {
+            foreach (DTEProject project in _DTE2.Solution.Projects)
+            {
+                if (!(project.Object is VCProject))
+                    continue;
+
+                SetVCProjectsConfigurationProperties(project, configuration);
+
+                break;
+            }
+        }
+
+        /* Alternative method to obtain the VCProject(s) collection
+        private static void foo()
+        {
+            Type type = typeof(VCProjectEngineShim);
+            object engine = type.GetProperty("Instance", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null, null);
+            if (engine == null)
+                return;
+
+            ProjectCollection collection = (ProjectCollection)type.GetProperty("ProjectCollection", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(engine, null);
+
+            IProjectLockService service = (IProjectLockService)type.GetProperty("ProjectLockService", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(engine, null);
+        }
+        */
+#endif
         private void GetService<T>(out T service)
         {
             service = (T)GetService(typeof(T));
