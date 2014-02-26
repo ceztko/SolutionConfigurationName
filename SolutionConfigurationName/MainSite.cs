@@ -76,14 +76,17 @@ namespace SolutionConfigurationName
             if (configuration == null)
                 return;
 
+            string configurationName = configuration.Name;
+            string platformName = configuration.PlatformName;
+
             ProjectCollection global = ProjectCollection.GlobalProjectCollection;
             global.SkipEvaluation = true;
-            global.SetGlobalProperty("SolutionConfigurationName", configuration.Name);
-            global.SetGlobalProperty("SolutionPlatformName", configuration.PlatformName);
+            global.SetGlobalProperty("SolutionConfigurationName", configurationName);
+            global.SetGlobalProperty("SolutionPlatformName", platformName);
             global.SkipEvaluation = false;
 
 #if VS12
-            SetVCProjectsConfigurationProperties(configuration);
+            SetVCProjectsConfigurationProperties(configurationName, platformName);
 #endif
         }
 
@@ -100,10 +103,11 @@ namespace SolutionConfigurationName
             SolutionConfiguration2 configuration =
                 (SolutionConfiguration2)_DTE2.Solution.SolutionBuild.ActiveConfiguration;
 
-            SetVCProjectsConfigurationProperties(project, configuration);
+            SetVCProjectsConfigurationProperties(project, configuration.Name, configuration.PlatformName);
         }
 
-        private static async void SetVCProjectsConfigurationProperties(DTEProject project, SolutionConfiguration2 configuration)
+        private static async void SetVCProjectsConfigurationProperties(DTEProject project,
+            string configurationName, string platformName)
         {
             IVsBrowseObjectContext context = project.Object as IVsBrowseObjectContext;
             UnconfiguredProject unconfiguredProject = context.UnconfiguredProject;
@@ -113,8 +117,8 @@ namespace SolutionConfigurationName
             {
                 ProjectCollection collection = releaser.ProjectCollection;
                 collection.SkipEvaluation = true;
-                collection.SetGlobalProperty("SolutionConfigurationName", configuration.Name);
-                collection.SetGlobalProperty("SolutionPlatformName", configuration.PlatformName);
+                collection.SetGlobalProperty("SolutionConfigurationName", configurationName);
+                collection.SetGlobalProperty("SolutionPlatformName", platformName);
                 collection.SkipEvaluation = false;
 
                 _VCProjectCollectionLoaded = true;
@@ -123,14 +127,14 @@ namespace SolutionConfigurationName
             }
         }
 
-        public static void SetVCProjectsConfigurationProperties(SolutionConfiguration2 configuration)
+        public static void SetVCProjectsConfigurationProperties(string configurationName, string platformName)
         {
             foreach (DTEProject project in _DTE2.Solution.Projects)
             {
                 if (!(project.Object is VCProject))
                     continue;
 
-                SetVCProjectsConfigurationProperties(project, configuration);
+                SetVCProjectsConfigurationProperties(project, configurationName, platformName);
 
                 break;
             }
