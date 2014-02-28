@@ -3,7 +3,7 @@
   <Metadata>
     <Identity Id="f8b7f761-0afd-47d2-8f62-136c7dc50973" Version="1.0" Language="en-US" Publisher="Francesco Pretto" />
     <DisplayName>Solution Configuration Name</DisplayName>
-    <Description xml:space="preserve">A Visual Studio extension that sets $(SolutionConfigurationName) and &amp;(SolutionPlatformName) build macros</Description>
+    <Description xml:space="preserve">A Visual Studio extension that sets $(SolutionConfiguration) and &amp;(SolutionPlatform) build macros</Description>
     <License>LICENSE</License>
   </Metadata>
   <Installation InstalledByMsi="false">

@@ -4,7 +4,7 @@
     <Name>Solution Configuration Name</Name>
     <Author>Francesco Pretto</Author>
     <Version>1.0</Version>
-    <Description xml:space="preserve">A Visual Studio extension that sets $(SolutionConfigurationName) and &amp;(SolutionPlatformName) build macros</Description>
+    <Description xml:space="preserve">A Visual Studio extension that sets $(SolutionConfiguration) and &amp;(SolutionPlatform) build macros</Description>
     <Locale>1033</Locale>
     <License>LICENSE</License>
     <InstalledByMsi>false</InstalledByMsi>

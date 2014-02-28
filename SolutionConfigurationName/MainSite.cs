@@ -35,6 +35,9 @@ namespace SolutionConfigurationName
     [ProvideAutoLoad(VSConstants.UICONTEXT.NoSolution_string)] // Load if no solution
     public sealed class MainSite : Package
     {
+        private const string SOLUTION_CONFIGURATION_MACRO = "SolutionConfiguration";
+        private const string SOLUTION_PLATFORM_MACRO = "SolutionPlatform";
+
         private static DTE2 _DTE2;
         private static UpdateSolutionEvents _UpdateSolutionEvents;
         private static SolutionEvents _SolutionEvents;
@@ -81,8 +84,8 @@ namespace SolutionConfigurationName
 
             ProjectCollection global = ProjectCollection.GlobalProjectCollection;
             global.SkipEvaluation = true;
-            global.SetGlobalProperty("SolutionConfigurationName", configurationName);
-            global.SetGlobalProperty("SolutionPlatformName", platformName);
+            global.SetGlobalProperty(SOLUTION_CONFIGURATION_MACRO, configurationName);
+            global.SetGlobalProperty(SOLUTION_PLATFORM_MACRO, platformName);
             global.SkipEvaluation = false;
 
 #if VS12
@@ -117,8 +120,8 @@ namespace SolutionConfigurationName
             {
                 ProjectCollection collection = releaser.ProjectCollection;
                 collection.SkipEvaluation = true;
-                collection.SetGlobalProperty("SolutionConfigurationName", configurationName);
-                collection.SetGlobalProperty("SolutionPlatformName", platformName);
+                collection.SetGlobalProperty(SOLUTION_CONFIGURATION_MACRO, configurationName);
+                collection.SetGlobalProperty(SOLUTION_PLATFORM_MACRO, platformName);
                 collection.SkipEvaluation = false;
 
                 _VCProjectCollectionLoaded = true;
