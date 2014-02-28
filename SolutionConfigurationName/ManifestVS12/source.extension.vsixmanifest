@@ -10,7 +10,6 @@
     <InstallationTarget Version="[12.0,13.0)" Id="Microsoft.VisualStudio.Pro" />
     <InstallationTarget Version="[12.0,13.0)" Id="Microsoft.VisualStudio.Premium" />
     <InstallationTarget Version="[12.0,13.0)" Id="Microsoft.VisualStudio.Ultimate" />
-    <InstallationTarget Version="[12.0,13.0)" Id="Microsoft.VisualStudio.VSWinExpress" />
   </Installation>
   <Dependencies>
     <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5.1,)" />
