@@ -76,7 +76,11 @@ namespace SolutionConfigurationName
 
                 _VCProjectCollectionLoaded = true;
 
-                await releaser.ReleaseAsync();
+                // The following was present in the NuGet code: it seesms unecessary,
+                // as the lock it's release anyway after the using block (check
+                // service.IsAnyLockHeld). Also it seemed to cause a deadlock sometimes
+                // when switching solution configuration
+                //await releaser.ReleaseAsync();
             }
         }
 
