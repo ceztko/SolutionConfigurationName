@@ -12,20 +12,20 @@ using EnvDTE;
 using EnvDTE80;
 using Microsoft.Build.Evaluation;
 using System.Reflection;
+using BuildProject = Microsoft.Build.Evaluation.Project;
 #if VS12
 using Microsoft.VisualStudio.ProjectSystem;
-using BuildProject = Microsoft.Build.Evaluation.Project;
+using Microsoft.VisualStudio.ProjectSystem.Designers;
+using Microsoft.VisualStudio.VCProjectEngine;
 #endif
 
 using DTEProject = EnvDTE.Project;
 
 namespace SolutionConfigurationName
 {
-#if VS12
+#if VS12 && DEBUG
     extern alias VC;
-    using VCProjectEngineShim=VC::Microsoft.VisualStudio.Project.VisualC.VCProjectEngine.VCProjectEngineShim;
-    using Microsoft.VisualStudio.ProjectSystem.Designers;
-    using Microsoft.VisualStudio.VCProjectEngine;
+    using VCProjectShim = VC::Microsoft.VisualStudio.Project.VisualC.VCProjectEngine.VCProjectShim;
 #endif
 
     [PackageRegistration(UseManagedResourcesOnly = true)]
@@ -35,6 +35,7 @@ namespace SolutionConfigurationName
     [ProvideAutoLoad(VSConstants.UICONTEXT.NoSolution_string)] // Load if no solution
     public sealed class MainSite : Package
     {
+        private const string SCN_DUMMY_PROPERTY = "SCNDummy";
         private const string SOLUTION_CONFIGURATION_MACRO = "SolutionConfiguration";
         private const string SOLUTION_PLATFORM_MACRO = "SolutionPlatform";
 
@@ -55,7 +56,6 @@ namespace SolutionConfigurationName
         protected override void Initialize()
         {
             base.Initialize();
-
             IVsExtensibility extensibility = GetService<IVsExtensibility>();
             _DTE2 = (DTE2)extensibility.GetGlobalsObject(null).DTE;
 
@@ -66,7 +66,7 @@ namespace SolutionConfigurationName
             hr = solution.AdviseSolutionEvents(_SolutionEvents, out pdwCookie);
             Marshal.ThrowExceptionForHR(hr);
 
-             IVsSolutionBuildManager3 vsSolutionBuildManager = (IVsSolutionBuildManager3)GetService<SVsSolutionBuildManager>();
+            IVsSolutionBuildManager3 vsSolutionBuildManager = (IVsSolutionBuildManager3)GetService<SVsSolutionBuildManager>();
             _UpdateSolutionEvents = new UpdateSolutionEvents();
             hr = vsSolutionBuildManager.AdviseUpdateSolutionEvents3(_UpdateSolutionEvents, out pdwCookie);
             Marshal.ThrowExceptionForHR(hr);
@@ -83,10 +83,7 @@ namespace SolutionConfigurationName
             string platformName = configuration.PlatformName;
 
             ProjectCollection global = ProjectCollection.GlobalProjectCollection;
-            global.SkipEvaluation = true;
-            global.SetGlobalProperty(SOLUTION_CONFIGURATION_MACRO, configurationName);
-            global.SetGlobalProperty(SOLUTION_PLATFORM_MACRO, platformName);
-            global.SkipEvaluation = false;
+            ConfigureCollection(global, configurationName, platformName, true);
 
 #if VS12
             SetVCProjectsConfigurationProperties(configurationName, platformName);
@@ -106,12 +103,15 @@ namespace SolutionConfigurationName
             SolutionConfiguration2 configuration =
                 (SolutionConfiguration2)_DTE2.Solution.SolutionBuild.ActiveConfiguration;
 
-            SetVCProjectsConfigurationProperties(project, configuration.Name, configuration.PlatformName);
+            // This is the first VC Project loaded, so we don't need to take
+            // measures to ensure all projects are correctly marked as dirty
+            SetVCProjectsConfigurationProperties(project, configuration.Name, configuration.PlatformName, false);
         }
 
         private static async void SetVCProjectsConfigurationProperties(DTEProject project,
-            string configurationName, string platformName)
+            string configurationName, string platformName, bool allprojects)
         {
+            // Inspired from Nuget: https://github.com/Haacked/NuGet/blob/master/src/VisualStudio12/ProjectHelper.cs
             IVsBrowseObjectContext context = project.Object as IVsBrowseObjectContext;
             UnconfiguredProject unconfiguredProject = context.UnconfiguredProject;
             IProjectLockService service = unconfiguredProject.ProjectService.Services.ProjectLockService;
@@ -119,10 +119,18 @@ namespace SolutionConfigurationName
             using (ProjectWriteLockReleaser releaser = await service.WriteLockAsync())
             {
                 ProjectCollection collection = releaser.ProjectCollection;
-                collection.SkipEvaluation = true;
-                collection.SetGlobalProperty(SOLUTION_CONFIGURATION_MACRO, configurationName);
-                collection.SetGlobalProperty(SOLUTION_PLATFORM_MACRO, platformName);
-                collection.SkipEvaluation = false;
+                ConfigureCollection(collection, configurationName, platformName, allprojects);
+
+                if (!allprojects)
+                {
+                    await releaser.CheckoutAsync(unconfiguredProject.FullPath);
+                    ConfiguredProject configuredProject = await unconfiguredProject.GetSuggestedConfiguredProjectAsync();
+                    BuildProject buildproj = await releaser.GetProjectAsync(configuredProject);
+
+                    // Check ConfigureCollection() method for explanation
+                    ProjectProperty prop = buildproj.SetProperty(SCN_DUMMY_PROPERTY, SCN_DUMMY_PROPERTY);
+                    buildproj.RemoveProperty(prop);
+                }
 
                 _VCProjectCollectionLoaded = true;
 
@@ -137,8 +145,12 @@ namespace SolutionConfigurationName
                 if (!(project.Object is VCProject))
                     continue;
 
-                SetVCProjectsConfigurationProperties(project, configurationName, platformName);
-
+                SetVCProjectsConfigurationProperties(project, configurationName, platformName, true);
+#if DEBUG
+                // The VCProject should be dirty when switching soulution configuration
+                VCProjectShim shim = project.Object as VCProjectShim;
+                bool test = shim.IsDirty;
+#endif
                 break;
             }
         }
@@ -157,6 +169,40 @@ namespace SolutionConfigurationName
         }
         */
 #endif
+
+        public static void ConfigureCollection(ProjectCollection collection,
+            string configurationName, string platformName, bool allprojects)
+        {
+            collection.SkipEvaluation = true;
+
+            collection.SetGlobalProperty(SOLUTION_CONFIGURATION_MACRO, configurationName);
+            collection.SetGlobalProperty(SOLUTION_PLATFORM_MACRO, platformName);
+
+            if (allprojects)
+            {
+                foreach (BuildProject project in collection.LoadedProjects)
+                {
+                    // Set and remove a dummy property and remove it immediately
+                    // to mark the project as dirty properly
+
+                    // CHECK-ME While the Project is indeed marked as dirty, setting the
+                    // global property does not really mark the project as dirty at all
+                    // levels: in some circustances the VCProject is still considered up-to
+                    // date. For example, when $(SolutionConfiguration) is used in $(OutDir)
+                    // and the project is set to build in Relase both in Debug/Release
+                    // solution configurations targets, the build system doesn't realize
+                    // it has to recompile the project when switching from Release to
+                    // Debug. Understand if this is a bug or find a better way to ensure
+                    // the VCProject is marked dirty
+
+                    ProjectProperty prop = project.SetProperty(SCN_DUMMY_PROPERTY, SCN_DUMMY_PROPERTY);
+                    project.RemoveProperty(prop);
+                }
+            }
+
+            collection.SkipEvaluation = false;
+        }
+
         private void GetService<T>(out T service)
         {
             service = (T)GetService(typeof(T));
