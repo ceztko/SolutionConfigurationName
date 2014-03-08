@@ -147,6 +147,7 @@
   <ItemGroup>
     <Compile Include="Extensions.cs" />
     <Compile Include="Guids.cs" />
+    <Compile Include="MainSite.VS12.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
