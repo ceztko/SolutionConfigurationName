@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
+using ATask = System.Threading.Tasks.Task;
 using Microsoft.Win32;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -11,12 +13,10 @@ using Microsoft.VisualStudio.Shell;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.Build.Evaluation;
-using System.Reflection;
 using BuildProject = Microsoft.Build.Evaluation.Project;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Designers;
 using Microsoft.VisualStudio.VCProjectEngine;
-
 using DTEProject = EnvDTE.Project;
 
 namespace SolutionConfigurationName
@@ -35,7 +35,7 @@ namespace SolutionConfigurationName
             _VCProjectCollectionLoaded = false;
         }
 
-        public static void EnsureVCProjectsPropertiesConfigured(IVsHierarchy hiearchy)
+        public static async void EnsureVCProjectsPropertiesConfigured(IVsHierarchy hiearchy)
         {
             if (_VCProjectCollectionLoaded)
                 return;
@@ -49,10 +49,10 @@ namespace SolutionConfigurationName
 
             // This is the first VC Project loaded, so we don't need to take
             // measures to ensure all projects are correctly marked as dirty
-            SetVCProjectsConfigurationProperties(project, configuration.Name, configuration.PlatformName, false);
+            await SetVCProjectsConfigurationProperties(project, configuration.Name, configuration.PlatformName, false);
         }
 
-        private static async void SetVCProjectsConfigurationProperties(DTEProject project,
+        private static async ATask SetVCProjectsConfigurationProperties(DTEProject project,
             string configurationName, string platformName, bool allprojects)
         {
             // Inspired from Nuget: https://github.com/Haacked/NuGet/blob/master/src/VisualStudio12/ProjectHelper.cs
@@ -80,14 +80,14 @@ namespace SolutionConfigurationName
             }
         }
 
-        public static void SetVCProjectsConfigurationProperties(string configurationName, string platformName)
+        private static async void SetVCProjectsConfigurationProperties(string configurationName, string platformName)
         {
             foreach (DTEProject project in _DTE2.Solution.Projects)
             {
                 if (!(project.Object is VCProject))
                     continue;
 
-                SetVCProjectsConfigurationProperties(project, configurationName, platformName, true);
+                await SetVCProjectsConfigurationProperties(project, configurationName, platformName, true);
 #if DEBUG
                 // The VCProject should be dirty when switching soulution configuration
                 VCProjectShim shim = project.Object as VCProjectShim;
