@@ -64,7 +64,7 @@ namespace SolutionConfigurationName
             string platformName = configuration.PlatformName;
 
             ProjectCollection global = ProjectCollection.GlobalProjectCollection;
-            ConfigureCollection(global, configurationName, platformName, true);
+            ConfigureCollection(global, null, configurationName, platformName);
 
 #if VS12
             SetVCProjectsConfigurationProperties(configurationName, platformName);
@@ -72,14 +72,14 @@ namespace SolutionConfigurationName
         }
 
         public static void ConfigureCollection(ProjectCollection collection,
-            string configurationName, string platformName, bool allprojects)
+            BuildProject singleproj, string configurationName, string platformName)
         {
             collection.SkipEvaluation = true;
 
             collection.SetGlobalProperty(SOLUTION_CONFIGURATION_MACRO, configurationName);
             collection.SetGlobalProperty(SOLUTION_PLATFORM_MACRO, platformName);
 
-            if (allprojects)
+            if (singleproj == null)
             {
                 foreach (BuildProject project in collection.LoadedProjects)
                 {
@@ -99,6 +99,12 @@ namespace SolutionConfigurationName
                     ProjectProperty prop = project.SetProperty(SCN_DUMMY_PROPERTY, SCN_DUMMY_PROPERTY);
                     project.RemoveProperty(prop);
                 }
+            }
+            else
+            {
+                // Same as above but for a single specified project
+                ProjectProperty prop = singleproj.SetProperty(SCN_DUMMY_PROPERTY, SCN_DUMMY_PROPERTY);
+                singleproj.RemoveProperty(prop);
             }
 
             collection.SkipEvaluation = false;

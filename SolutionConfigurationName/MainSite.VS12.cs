@@ -63,18 +63,16 @@ namespace SolutionConfigurationName
             using (ProjectWriteLockReleaser releaser = await service.WriteLockAsync())
             {
                 ProjectCollection collection = releaser.ProjectCollection;
-                ConfigureCollection(collection, configurationName, platformName, allprojects);
 
+                BuildProject buildproj = null;
                 if (!allprojects)
                 {
                     await releaser.CheckoutAsync(unconfiguredProject.FullPath);
                     ConfiguredProject configuredProject = await unconfiguredProject.GetSuggestedConfiguredProjectAsync();
-                    BuildProject buildproj = await releaser.GetProjectAsync(configuredProject);
-
-                    // Check ConfigureCollection() method for explanation
-                    ProjectProperty prop = buildproj.SetProperty(SCN_DUMMY_PROPERTY, SCN_DUMMY_PROPERTY);
-                    buildproj.RemoveProperty(prop);
+                    buildproj = await releaser.GetProjectAsync(configuredProject);
                 }
+
+                ConfigureCollection(collection, buildproj, configurationName, platformName);
 
                 _VCProjectCollectionLoaded = true;
 
