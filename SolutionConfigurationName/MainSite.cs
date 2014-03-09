@@ -94,7 +94,7 @@ namespace SolutionConfigurationName
                     // solution configurations targets, the build system doesn't realize
                     // it has to recompile the project when switching from Release to
                     // Debug. Understand if this is a bug or find a better way to ensure
-                    // the VCProject is marked dirty
+                    // the VCProject is marked dirty. Check Resources\Test project
 
                     ProjectProperty prop = project.SetProperty(SCN_DUMMY_PROPERTY, SCN_DUMMY_PROPERTY);
                     project.RemoveProperty(prop);

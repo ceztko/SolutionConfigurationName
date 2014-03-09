@@ -1,0 +1,13 @@
+Note: LibDll project is set to output to "$(SolutionDir)$(SolutionConfiguration)". ConsoleApp project imports LibDll.
+
+1) Test working linking when switching solution configuration.
+
+  * Clean the project in both Debug/Release targets;  
+  * Switch to Release. Build;
+  * Switch to Debug. Build.
+
+It should not result in error of ConsoleApp not finding LibDll.lib.
+
+2) Test reliability of switching Debug/Release
+
+  * Switch Debug/Release plus build multiple times
