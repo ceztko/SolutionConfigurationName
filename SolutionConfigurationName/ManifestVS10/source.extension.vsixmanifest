@@ -7,6 +7,8 @@
     <Description xml:space="preserve">A Visual Studio extension that sets SolutionConfiguration and SolutionPlatform build macros</Description>
     <Locale>1033</Locale>
     <License>LICENSE</License>
+    <Icon>Resources\Icon.png</Icon>
+    <PreviewImage>Resources\Preview.png</PreviewImage>
     <InstalledByMsi>false</InstalledByMsi>
     <SupportedProducts>
       <VisualStudio Version="10.0">
