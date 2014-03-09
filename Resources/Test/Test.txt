@@ -1,4 +1,5 @@
-Note: LibDll project is set to output to "$(SolutionDir)$(SolutionConfiguration)". ConsoleApp project imports LibDll.
+Note: LibDll project is set to output to "$(SolutionDir)$(SolutionConfiguration)".
+ConsoleApp project imports LibDll.
 
 1) Test working linking when switching solution configuration.
 
@@ -6,7 +7,7 @@ Note: LibDll project is set to output to "$(SolutionDir)$(SolutionConfiguration)
   * Switch to Release. Build;
   * Switch to Debug. Build.
 
-It should not result in error of ConsoleApp not finding LibDll.lib.
+It should not result in error LNK1104 of ConsoleApp not finding LibDll.lib.
 
 2) Test reliability of switching Debug/Release
 
