@@ -16,6 +16,7 @@ using Microsoft.Build.Evaluation;
 using System.Reflection;
 using BuildProject = Microsoft.Build.Evaluation.Project;
 using DTEProject = EnvDTE.Project;
+using System.IO;
 
 namespace SolutionConfigurationName
 {
@@ -152,16 +153,24 @@ namespace SolutionConfigurationName
 
             SolutionConfiguration currSolCfg = _DTE2.Solution.SolutionBuild.ActiveConfiguration;
             List<DTEProject> ret = new List<DTEProject>();
-            foreach (DTEProject project in _DTE2.Solution.Projects)
+            foreach (DTEProject project in _DTE2.Solution.Projects.AllProjects())
             {
                 if (project.Kind == EnvDTE.Constants.vsProjectKindSolutionItems || project.ConfigurationManager == null)
                     continue;
 
-                string prevPrjCfgName = currSolCfg.SolutionContexts.Item(project.UniqueName).ConfigurationName;
-                string currPrjCfgName = prevSolCfg.SolutionContexts.Item(project.UniqueName).ConfigurationName;
+                try
+                {
+                    string prevPrjCfgName = currSolCfg.SolutionContexts.Item(project.UniqueName).ConfigurationName;
+                    string currPrjCfgName = prevSolCfg.SolutionContexts.Item(project.UniqueName).ConfigurationName;
 
-                if (prevPrjCfgName == currPrjCfgName)
-                    ret.Add(project);
+                    if (prevPrjCfgName == currPrjCfgName)
+                        ret.Add(project);
+                }
+                catch
+                {
+                    // Safeguard, just in case SolutionContexts Item() indexer fails
+                    continue;
+                }
             }
 
             return ret;

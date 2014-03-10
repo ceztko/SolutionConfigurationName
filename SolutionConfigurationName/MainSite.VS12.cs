@@ -80,7 +80,7 @@ namespace SolutionConfigurationName
         private static async void SetVCProjectsConfigurationProperties(string configurationName, string platformName,
             HashSet<string> projectsToInvalidate)
         {
-            foreach (DTEProject project in _DTE2.Solution.Projects)
+            foreach (DTEProject project in _DTE2.Solution.Projects.AllProjects())
             {
                 if (!(project.Object is VCProject))
                     continue;
@@ -91,7 +91,7 @@ namespace SolutionConfigurationName
             }
 
 #if DEBUG
-            foreach (DTEProject project in _DTE2.Solution.Projects)
+            foreach (DTEProject project in _DTE2.Solution.Projects.AllProjects())
             {
                 VCProjectShim shim = project.Object as VCProjectShim;
                 if (shim == null)
