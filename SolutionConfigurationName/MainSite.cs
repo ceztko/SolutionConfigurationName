@@ -74,7 +74,6 @@ namespace SolutionConfigurationName
         public static void ConfigureCollection(ProjectCollection collection,
             BuildProject singleproj, string configurationName, string platformName)
         {
-            collection.DisableMarkDirty = true;
             collection.SkipEvaluation = true;
 
             collection.SetGlobalProperty(SOLUTION_CONFIGURATION_MACRO, configurationName);
@@ -109,7 +108,6 @@ namespace SolutionConfigurationName
             }
 
             collection.SkipEvaluation = false;
-            collection.DisableMarkDirty = false;
         }
 
         private void GetService<T>(out T service)
