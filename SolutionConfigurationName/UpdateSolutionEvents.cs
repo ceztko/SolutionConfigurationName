@@ -54,8 +54,14 @@ namespace SolutionConfigurationName
 
         public int OnAfterActiveSolutionCfgChange(IVsCfg pOldActiveSlnCfg, IVsCfg pNewActiveSlnCfg)
         {
+            string previousConfiguration;
+            if (pOldActiveSlnCfg == null)
+                previousConfiguration = null;
+            else
+                pOldActiveSlnCfg.get_DisplayName(out previousConfiguration);
+
             // Set variables according the new active configuration
-            MainSite.SetConfigurationProperties();
+            MainSite.SetConfigurationProperties(previousConfiguration);
 
             return VSConstants.S_OK;
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
@@ -49,11 +50,11 @@ namespace SolutionConfigurationName
 
             // This is the first VC Project loaded, so we don't need to take
             // measures to ensure all projects are correctly marked as dirty
-            await SetVCProjectsConfigurationProperties(project, configuration.Name, configuration.PlatformName, false);
+            await SetVCProjectsConfigurationProperties(project, configuration.Name, configuration.PlatformName, null);
         }
 
         private static async ATask SetVCProjectsConfigurationProperties(DTEProject project,
-            string configurationName, string platformName, bool allprojects)
+            string configurationName, string platformName, HashSet<string> projectsToInvalidate)
         {
             // Inspired from Nuget: https://github.com/Haacked/NuGet/blob/master/src/VisualStudio12/ProjectHelper.cs
             IVsBrowseObjectContext context = project.Object as IVsBrowseObjectContext;
@@ -64,15 +65,7 @@ namespace SolutionConfigurationName
             {
                 ProjectCollection collection = releaser.ProjectCollection;
 
-                BuildProject buildproj = null;
-                if (!allprojects)
-                {
-                    await releaser.CheckoutAsync(unconfiguredProject.FullPath);
-                    ConfiguredProject configuredProject = await unconfiguredProject.GetSuggestedConfiguredProjectAsync();
-                    buildproj = await releaser.GetProjectAsync(configuredProject);
-                }
-
-                ConfigureCollection(collection, buildproj, configurationName, platformName);
+                ConfigureCollection(collection, configurationName, platformName, projectsToInvalidate);
 
                 _VCProjectCollectionLoaded = true;
 
@@ -84,21 +77,29 @@ namespace SolutionConfigurationName
             }
         }
 
-        private static async void SetVCProjectsConfigurationProperties(string configurationName, string platformName)
+        private static async void SetVCProjectsConfigurationProperties(string configurationName, string platformName,
+            HashSet<string> projectsToInvalidate)
         {
             foreach (DTEProject project in _DTE2.Solution.Projects)
             {
                 if (!(project.Object is VCProject))
                     continue;
 
-                await SetVCProjectsConfigurationProperties(project, configurationName, platformName, true);
-#if DEBUG
-                // The VCProject should be dirty when switching soulution configuration
-                VCProjectShim shim = project.Object as VCProjectShim;
-                bool test = shim.IsDirty;
-#endif
+                await SetVCProjectsConfigurationProperties(project, configurationName, platformName, projectsToInvalidate);
+
                 break;
             }
+
+#if DEBUG
+            foreach (DTEProject project in _DTE2.Solution.Projects)
+            {
+                VCProjectShim shim = project.Object as VCProjectShim;
+                if (shim == null)
+                    continue;
+
+                bool test = shim.IsDirty;
+            }
+#endif
         }
 
         /* Alternative method to obtain the VCProject(s) collection

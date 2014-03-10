@@ -91,7 +91,7 @@ namespace SolutionConfigurationName
         public int OnAfterBackgroundSolutionLoadComplete()
         {
             // Set variables according the just opened solution
-            MainSite.SetConfigurationProperties();
+            MainSite.SetConfigurationProperties(null);
 
             return VSConstants.S_OK;
         }
