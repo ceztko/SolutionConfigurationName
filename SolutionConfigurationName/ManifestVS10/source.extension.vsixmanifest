@@ -3,7 +3,7 @@
   <Identifier Id="9ee835eb-ea7d-484c-ba9d-7db69079e0c8">
     <Name>Solution Configuration Name</Name>
     <Author>Francesco Pretto</Author>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Description xml:space="preserve">A Visual Studio extension that sets SolutionConfiguration and SolutionPlatform build macros</Description>
     <Locale>1033</Locale>
     <License>LICENSE</License>
