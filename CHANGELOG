@@ -5,3 +5,5 @@ Solution Configuration Name 1.0
   Solution Configuration Name 1.0.2
 ---------------------------------
   * Fixed projects marked as dirty
+  * Fixed not all projects were scanned
+
