@@ -144,6 +144,7 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsyncLock.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Guids.cs" />
     <Compile Include="MainSite.VS12.cs" />

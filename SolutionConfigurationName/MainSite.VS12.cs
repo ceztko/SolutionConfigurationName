@@ -30,27 +30,32 @@ namespace SolutionConfigurationName
     partial class MainSite
     {
         private static volatile bool _VCProjectCollectionLoaded;
+        private static AsyncLock _lock;
 
         static MainSite()
         {
             _VCProjectCollectionLoaded = false;
+            _lock = new AsyncLock();
         }
 
         public static async void EnsureVCProjectsPropertiesConfigured(IVsHierarchy hiearchy)
         {
-            if (_VCProjectCollectionLoaded)
-                return;
+            using (await _lock.LockAsync())
+            {
+                if (_VCProjectCollectionLoaded)
+                    return;
 
-            DTEProject project = hiearchy.GetProject();
-            if (project == null || !(project.Object is VCProject))
-                return;
+                DTEProject project = hiearchy.GetProject();
+                if (project == null || !(project.Object is VCProject))
+                    return;
 
-            SolutionConfiguration2 configuration =
-                (SolutionConfiguration2)_DTE2.Solution.SolutionBuild.ActiveConfiguration;
+                SolutionConfiguration2 configuration =
+                    (SolutionConfiguration2)_DTE2.Solution.SolutionBuild.ActiveConfiguration;
 
-            // This is the first VC Project loaded, so we don't need to take
-            // measures to ensure all projects are correctly marked as dirty
-            await SetVCProjectsConfigurationProperties(project, configuration.Name, configuration.PlatformName, null);
+                // This is the first VC Project loaded, so we don't need to take
+                // measures to ensure all projects are correctly marked as dirty
+                await SetVCProjectsConfigurationProperties(project, configuration.Name, configuration.PlatformName, null);
+            }
         }
 
         private static async ATask SetVCProjectsConfigurationProperties(DTEProject project,
