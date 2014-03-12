@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace SolutionConfigurationName
 {
     // http://www.hanselman.com/blog/ComparingTwoTechniquesInNETAsynchronousCoordinationPrimitives.aspx
-    public sealed class AsyncLock
+    internal sealed class AsyncLock : IDisposable
     {
         private readonly SemaphoreSlim m_semaphore = new SemaphoreSlim(1, 1);
         private readonly Task<IDisposable> m_releaser;
@@ -33,6 +33,12 @@ namespace SolutionConfigurationName
             private readonly AsyncLock m_toRelease;
             internal Releaser(AsyncLock toRelease) { m_toRelease = toRelease; }
             public void Dispose() { m_toRelease.m_semaphore.Release(); }
+        }
+
+        public void Dispose()
+        {
+            m_semaphore.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }
