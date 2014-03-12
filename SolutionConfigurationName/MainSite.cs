@@ -133,8 +133,9 @@ namespace SolutionConfigurationName
         // solution configuration we need to invalidate them manually
         private static List<DTEProject> DetermineProjectsToInvalidate(string previousConfiguration)
         {
+            List<DTEProject> ret = new List<DTEProject>();
             if (previousConfiguration == null)
-                return null;
+                return ret;
 
             string[] tokens = previousConfiguration.Split('|');
             string prevSolCfgName = tokens[0];
@@ -152,7 +153,6 @@ namespace SolutionConfigurationName
             }
 
             SolutionConfiguration currSolCfg = _DTE2.Solution.SolutionBuild.ActiveConfiguration;
-            List<DTEProject> ret = new List<DTEProject>();
             foreach (DTEProject project in _DTE2.Solution.Projects.AllProjects())
             {
                 if (project.Kind == EnvDTE.Constants.vsProjectKindSolutionItems || project.ConfigurationManager == null)
