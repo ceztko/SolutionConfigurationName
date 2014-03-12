@@ -2,8 +2,11 @@ Solution Configuration Name 1.0
 -------------------------------
   * First release
 
-  Solution Configuration Name 1.0.2
+Solution Configuration Name 1.0.2
 ---------------------------------
   * Fixed projects marked as dirty
   * Fixed not all projects were scanned
 
+Solution Configuration Name 1.0.3
+---------------------------------
+  * Fixed/better early setting of the macro (especially on VS2010)
