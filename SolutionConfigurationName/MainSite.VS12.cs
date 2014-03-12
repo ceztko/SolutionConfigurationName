@@ -52,6 +52,11 @@ namespace SolutionConfigurationName
                 SolutionConfiguration2 configuration =
                     (SolutionConfiguration2)_DTE2.Solution.SolutionBuild.ActiveConfiguration;
 
+                // When creating a completely new project the solution doesn't exist yet
+                // so the ActiveConfiguration is null
+                if (configuration == null)
+                    return;
+
                 // This is the first VC Project loaded, so we don't need to take
                 // measures to ensure all projects are correctly marked as dirty
                 await SetVCProjectsConfigurationProperties(project, configuration.Name, configuration.PlatformName, null);
