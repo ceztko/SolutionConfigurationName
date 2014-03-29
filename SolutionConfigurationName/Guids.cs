@@ -1,4 +1,4 @@
-﻿using System;
+﻿// Copyright (c) 2013-2014 Francesco Pretto. Subject to the MIT license
 
 namespace SolutionConfigurationName
 {

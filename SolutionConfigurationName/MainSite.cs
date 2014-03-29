@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) 2013-2014 Francesco Pretto. Subject to the MIT license
+
+using System;
 using System.Linq;
 using System.Diagnostics;
 using System.Globalization;

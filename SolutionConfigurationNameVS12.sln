@@ -7,11 +7,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolutionConfigurationNameVS
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{BB30F280-9FD5-4F5C-9B1B-93BBE536EE51}"
 	ProjectSection(SolutionItems) = preProject
-		BUILD = BUILD
-		CHANGELOG = CHANGELOG
-		INSTALL = INSTALL
-		LICENSE = LICENSE
-		README = README
+		BUILD.txt = BUILD.txt
+		CHANGELOG.txt = CHANGELOG.txt
+		INSTALL.txt = INSTALL.txt
+		LICENSE.txt = LICENSE.txt
+		README.txt = README.txt
 	EndProjectSection
 EndProject
 Global

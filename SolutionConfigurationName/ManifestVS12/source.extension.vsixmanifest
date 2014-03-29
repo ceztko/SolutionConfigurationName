@@ -4,7 +4,7 @@
     <Identity Id="f8b7f761-0afd-47d2-8f62-136c7dc50973" Version="1.0.3" Language="en-US" Publisher="Francesco Pretto" />
     <DisplayName>Solution Configuration Name</DisplayName>
     <Description xml:space="preserve">A Visual Studio extension that sets SolutionConfiguration and SolutionPlatform build macros</Description>
-    <License>LICENSE</License>
+    <License>LICENSE.txt</License>
     <Icon>Resources\Icon.png</Icon>
     <PreviewImage>Resources\Preview.png</PreviewImage>
   </Metadata>
