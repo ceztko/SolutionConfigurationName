@@ -10,16 +10,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.VCProjectEngine;
 
 namespace SolutionConfigurationName
 {
-    public static class Extensions
+    public static partial class Extensions
     {
         public static Project GetProject(this IVsHierarchy hierarchy)
         {
             object project;
-             if (!ErrorHandler.Succeeded(hierarchy.GetProperty((uint)VSConstants.VSITEMID.Root, (int)__VSHPROPID.VSHPROPID_ExtObject, out project)))
-                 return null;
+            if (!ErrorHandler.Succeeded(hierarchy.GetProperty((uint)VSConstants.VSITEMID.Root, (int)__VSHPROPID.VSHPROPID_ExtObject, out project)))
+                return null;
 
             return project as Project;
         }
@@ -54,6 +55,33 @@ namespace SolutionConfigurationName
             else
 #endif
                 yield return project;
+        }
+
+        public static VCProject GetVCProject(this Project project)
+        {
+            return project.Object as VCProject;
+        }
+
+        public static Lazy<T, IDictionary<string, object>> FindExport<T>(IEnumerable<Lazy<T, IDictionary<string, object>>> collection, string metadataName, string metadataValue)
+        {
+            foreach (Lazy<T, IDictionary<string, object>> lazy in collection)
+            {
+                object obj = lazy.Metadata[metadataName];
+                string str = obj as string;
+                if (str != null)
+                {
+                    if (str.Equals(metadataValue, StringComparison.OrdinalIgnoreCase))
+                        return lazy;
+                }
+                else
+                {
+                    string[] array = obj as string[];
+                    if (array.Contains(metadataValue, StringComparer.OrdinalIgnoreCase))
+                        return lazy;
+                }
+            }
+
+            return null;
         }
     }
 }

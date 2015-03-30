@@ -69,11 +69,9 @@ namespace SolutionConfigurationName
 
             List<DTEProject> projectsToInvalidate = DetermineProjectsToInvalidate(previousConfiguration);
 
-            HashSet<string> projectsToInvalidatePaths = new HashSet<string>();
             List<DTEProject> projectsToInvalidateSaved = new List<DTEProject>();
             foreach(DTEProject project in projectsToInvalidate)
             {
-                projectsToInvalidatePaths.Add(project.FullName);
                 if (project.Saved)
                     projectsToInvalidateSaved.Add(project);
             }
@@ -82,10 +80,11 @@ namespace SolutionConfigurationName
             string platformName = configuration.PlatformName;
 
             ProjectCollection global = ProjectCollection.GlobalProjectCollection;
-            ConfigureCollection(global, configurationName, platformName, projectsToInvalidatePaths);
-
-#if VS12
-            SetVCProjectsConfigurationProperties(configurationName, platformName, projectsToInvalidatePaths);
+            ConfigureCollection(global, configurationName, platformName);
+#if VS10
+            InvalidateProjects(projectsToInvalidate, null);
+#elif VS12
+            SetVCProjectsConfigurationProperties(configurationName, platformName, projectsToInvalidate);
 #endif
 
             // Projects are invalidated elsewehere, but we must save them here
@@ -94,8 +93,34 @@ namespace SolutionConfigurationName
                 project.Save();
         }
 
+        /// <param name="data">VS12 need a lock to be passed for all the projects</param>
+        private static void InvalidateProjects(IEnumerable<DTEProject> projectsToInvalidate, object data)
+        {
+            // Set and remove a dummy property and remove it immediately
+            // to mark the project as dirty properly
+            // CHECK-ME While the BuildProject is indeed reeavaluated, setting the
+            // global property does not really mark the project as dirty everywhere:
+            // in some circustances the VCProject is still considered up-to date.
+            // For example, when $(SolutionConfiguration) is used in $(OutDir)
+            // and the project is set to build in Relase both in Debug/Release
+            // solution configurations targets, the build system doesn't realize
+            // it has to recompile the project when switching from Release to
+            // Debug. Understand if this is a bug or find a better way to ensure
+            // the VCProject is marked dirty. Check Resources\Test project
+            Action<BuildProject> action = (dteproject) =>
+            {
+                ProjectProperty prop = dteproject.SetProperty(SCN_DUMMY_PROPERTY, SCN_DUMMY_PROPERTY);
+                dteproject.RemoveProperty(prop);
+            };
+
+            foreach (DTEProject dteproject in projectsToInvalidate)
+            {
+                ExecuteWithinLock(dteproject, action, data);
+            }
+        }
+
         private static void ConfigureCollection(ProjectCollection collection,
-            string configurationName, string platformName, IEnumerable<string> projectsToInvalidate)
+            string configurationName, string platformName)
         {
             collection.SkipEvaluation = true;
 
@@ -103,32 +128,6 @@ namespace SolutionConfigurationName
             collection.SetGlobalProperty(SOLUTION_PLATFORM_MACRO, platformName);
 
             collection.SkipEvaluation = false;
-
-            if (projectsToInvalidate == null)
-                return;
-
-            foreach (string projectPath in projectsToInvalidate)
-            {
-                BuildProject buildproj = collection.GetLoadedProjects(projectPath).FirstOrDefault();
-                if (buildproj == null)
-                    continue;
-
-                // Set and remove a dummy property and remove it immediately
-                // to mark the project as dirty properly
-
-                // CHECK-ME While the BuildProject is indeed reeavaluated, setting the
-                // global property does not really mark the project as dirty everywhere:
-                // in some circustances the VCProject is still considered up-to date.
-                // For example, when $(SolutionConfiguration) is used in $(OutDir)
-                // and the project is set to build in Relase both in Debug/Release
-                // solution configurations targets, the build system doesn't realize
-                // it has to recompile the project when switching from Release to
-                // Debug. Understand if this is a bug or find a better way to ensure
-                // the VCProject is marked dirty. Check Resources\Test project
-
-                ProjectProperty prop = buildproj.SetProperty(SCN_DUMMY_PROPERTY, SCN_DUMMY_PROPERTY);
-                buildproj.RemoveProperty(prop);
-            }
         }
         
         // Visual Studio doesn't invalidate build objects just by changing global

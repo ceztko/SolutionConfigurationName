@@ -67,7 +67,7 @@ namespace SolutionConfigurationName
         }
 
         private static async ATask SetVCProjectsConfigurationProperties(DTEProject project,
-            string configurationName, string platformName, HashSet<string> projectsToInvalidate)
+            string configurationName, string platformName, List<DTEProject> projectsToInvalidate)
         {
             // Inspired from Nuget: https://github.com/Haacked/NuGet/blob/master/src/VisualStudio12/ProjectHelper.cs
             IVsBrowseObjectContext context = project.Object as IVsBrowseObjectContext;
@@ -78,7 +78,9 @@ namespace SolutionConfigurationName
             {
                 ProjectCollection collection = releaser.ProjectCollection;
 
-                ConfigureCollection(collection, configurationName, platformName, projectsToInvalidate);
+                ConfigureCollection(collection, configurationName, platformName);
+                if (projectsToInvalidate != null)
+                    InvalidateProjects(projectsToInvalidate, releaser);
 
                 _VCProjectCollectionLoaded = true;
 
@@ -91,7 +93,7 @@ namespace SolutionConfigurationName
         }
 
         private static async void SetVCProjectsConfigurationProperties(string configurationName, string platformName,
-            HashSet<string> projectsToInvalidate)
+            List<DTEProject> projectsToInvalidate)
         {
             foreach (DTEProject project in _DTE2.Solution.Projects.AllProjects())
             {
@@ -113,6 +115,18 @@ namespace SolutionConfigurationName
                 bool test = shim.IsDirty;
             }
 #endif
+        }
+
+        public static async void ExecuteWithinLock(DTEProject project, Action<BuildProject> action, object data)
+        {
+            ProjectWriteLockReleaser projectlock = (ProjectWriteLockReleaser)data;
+
+            // Inspired from Nuget: https://github.com/Haacked/NuGet/blob/master/src/VisualStudio12/ProjectHelper.cs
+            IVsBrowseObjectContext context = project.Object as IVsBrowseObjectContext;
+            UnconfiguredProject unconfiguredProject = context.UnconfiguredProject;
+            ConfiguredProject configuredProject = await unconfiguredProject.GetSuggestedConfiguredProjectAsync();
+            BuildProject buildProject = await projectlock.GetProjectAsync(configuredProject);
+            action(buildProject);
         }
 
         /* Alternative method to obtain the VCProject(s) collection
