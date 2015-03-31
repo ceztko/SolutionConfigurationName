@@ -30,7 +30,7 @@ namespace SolutionConfigurationName
     [ProvideAutoLoad(VSConstants.UICONTEXT.NoSolution_string)]       // Load if no solution
     public sealed partial class MainSite : Package                   // Sealed is needed in VS2013
     {
-        private const string SCN_DUMMY_PROPERTY = "SCNDummy";
+        private const string SCN_DUMMY_PROPERTY = "__SCNDummy";
         private const string SOLUTION_CONFIGURATION_MACRO = "SolutionConfiguration";
         private const string SOLUTION_PLATFORM_MACRO = "SolutionPlatform";
 
@@ -59,7 +59,6 @@ namespace SolutionConfigurationName
             hr = vsSolutionBuildManager.AdviseUpdateSolutionEvents3(_UpdateSolutionEvents, out pdwCookie);
             Marshal.ThrowExceptionForHR(hr);
         }
-
         public static void SetConfigurationProperties(string previousConfiguration)
         {
             SolutionConfiguration2 configuration =
@@ -81,20 +80,14 @@ namespace SolutionConfigurationName
 
             ProjectCollection global = ProjectCollection.GlobalProjectCollection;
             ConfigureCollection(global, configurationName, platformName);
-#if VS10
-            InvalidateProjects(projectsToInvalidate, null);
-#elif VS12
+#if VS12
             SetVCProjectsConfigurationProperties(configurationName, platformName, projectsToInvalidate);
 #endif
 
-            // Projects are invalidated elsewehere, but we must save them here
-            // otherwise VS will object that they were saved out of the environment
-            foreach (DTEProject project in projectsToInvalidateSaved)
-                project.Save();
+            InvalidateProjects(projectsToInvalidate);
         }
 
-        /// <param name="data">VS12 need a lock to be passed for all the projects</param>
-        private static void InvalidateProjects(IEnumerable<DTEProject> projectsToInvalidate, object data)
+        private static void InvalidateProjects(IEnumerable<DTEProject> projectsToInvalidate)
         {
             // Set and remove a dummy property and remove it immediately
             // to mark the project as dirty properly
@@ -107,15 +100,13 @@ namespace SolutionConfigurationName
             // it has to recompile the project when switching from Release to
             // Debug. Understand if this is a bug or find a better way to ensure
             // the VCProject is marked dirty. Check Resources\Test project
-            Action<BuildProject> action = (dteproject) =>
-            {
-                ProjectProperty prop = dteproject.SetProperty(SCN_DUMMY_PROPERTY, SCN_DUMMY_PROPERTY);
-                dteproject.RemoveProperty(prop);
-            };
-
             foreach (DTEProject dteproject in projectsToInvalidate)
             {
-                ExecuteWithinLock(dteproject, action, data);
+                dteproject.Globals[SCN_DUMMY_PROPERTY] = SCN_DUMMY_PROPERTY;
+                // The following is needed to truly invalidate the project
+                dteproject.Globals.VariablePersists[SCN_DUMMY_PROPERTY] = true;
+                dteproject.Globals.VariablePersists[SCN_DUMMY_PROPERTY] = false;
+                dteproject.Save();
             }
         }
 

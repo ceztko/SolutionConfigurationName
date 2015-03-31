@@ -62,12 +62,12 @@ namespace SolutionConfigurationName
 
                 // This is the first VC Project loaded, so we don't need to take
                 // measures to ensure all projects are correctly marked as dirty
-                await SetVCProjectsConfigurationProperties(project, configuration.Name, configuration.PlatformName, null);
+                await SetVCProjectsConfigurationProperties(project, configuration.Name, configuration.PlatformName);
             }
         }
 
         private static async ATask SetVCProjectsConfigurationProperties(DTEProject project,
-            string configurationName, string platformName, List<DTEProject> projectsToInvalidate)
+            string configurationName, string platformName)
         {
             // Inspired from Nuget: https://github.com/Haacked/NuGet/blob/master/src/VisualStudio12/ProjectHelper.cs
             IVsBrowseObjectContext context = project.Object as IVsBrowseObjectContext;
@@ -79,8 +79,6 @@ namespace SolutionConfigurationName
                 ProjectCollection collection = releaser.ProjectCollection;
 
                 ConfigureCollection(collection, configurationName, platformName);
-                if (projectsToInvalidate != null)
-                    InvalidateProjects(projectsToInvalidate, releaser);
 
                 _VCProjectCollectionLoaded = true;
 
@@ -100,7 +98,7 @@ namespace SolutionConfigurationName
                 if (!(project.Object is VCProject))
                     continue;
 
-                await SetVCProjectsConfigurationProperties(project, configurationName, platformName, projectsToInvalidate);
+                await SetVCProjectsConfigurationProperties(project, configurationName, platformName);
 
                 break;
             }
@@ -115,18 +113,6 @@ namespace SolutionConfigurationName
                 bool test = shim.IsDirty;
             }
 #endif
-        }
-
-        public static async void ExecuteWithinLock(DTEProject project, Action<BuildProject> action, object data)
-        {
-            ProjectWriteLockReleaser projectlock = (ProjectWriteLockReleaser)data;
-
-            // Inspired from Nuget: https://github.com/Haacked/NuGet/blob/master/src/VisualStudio12/ProjectHelper.cs
-            IVsBrowseObjectContext context = project.Object as IVsBrowseObjectContext;
-            UnconfiguredProject unconfiguredProject = context.UnconfiguredProject;
-            ConfiguredProject configuredProject = await unconfiguredProject.GetSuggestedConfiguredProjectAsync();
-            BuildProject buildProject = await projectlock.GetProjectAsync(configuredProject);
-            action(buildProject);
         }
 
         /* Alternative method to obtain the VCProject(s) collection
