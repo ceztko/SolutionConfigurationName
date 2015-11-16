@@ -42,21 +42,33 @@
   <ItemGroup>
     <Reference Include="Microsoft.Build, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\MSBuild\12.0\Bin\Microsoft.Build.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Program Files (x86)\MSBuild\12.0\Bin\Microsoft.Build.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.VisualStudio.OLE.Interop" />
-    <Reference Include="Microsoft.VisualStudio.Project.VisualC.VCProjectEngine, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.VisualStudio.Project.VisualC.VCProjectEngine, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\ProjectComponents\Microsoft.VisualStudio.Project.VisualC.VCProjectEngine.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\ProjectComponents\Microsoft.VisualStudio.Project.VisualC.VCProjectEngine.dll</HintPath>
       <Aliases>VC</Aliases>
     </Reference>
-    <Reference Include="Microsoft.VisualStudio.ProjectSystem.V12Only, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\ProjectComponents\Microsoft.VisualStudio.ProjectSystem.V12Only.dll</HintPath>
+    <Reference Include="Microsoft.VisualStudio.ProjectSystem.V12Only, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <SpecificVersion>True</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\ProjectComponents\Microsoft.VisualStudio.ProjectSystem.V12Only.dll</HintPath>
+      <Aliases>VS12</Aliases>
     </Reference>
-    <Reference Include="Microsoft.VisualStudio.ProjectSystem.VS.V12Only, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="Microsoft.VisualStudio.ProjectSystem.V14Only, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <HintPath>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\PrivateAssemblies\Microsoft.VisualStudio.ProjectSystem.V14Only.dll</HintPath>
+      <Aliases>VS14</Aliases>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.ProjectSystem.VS.V12Only, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <SpecificVersion>True</SpecificVersion>
+      <Aliases>VS12</Aliases>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.ProjectSystem.VS.V14Only, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <HintPath>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\PrivateAssemblies\Microsoft.VisualStudio.ProjectSystem.VS.V14Only.dll</HintPath>
+      <Aliases>VS14</Aliases>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.Shell.Interop" />
     <Reference Include="Microsoft.VisualStudio.Shell.Interop.8.0" />
@@ -70,7 +82,7 @@
     <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <SpecificVersion>False</SpecificVersion>
       <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\PublicAssemblies\Microsoft.VisualStudio.VCProjectEngine.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\PublicAssemblies\Microsoft.VisualStudio.VCProjectEngine.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -145,9 +157,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncLock.cs" />
+    <Compile Include="MainSite.VS12Only.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Guids.cs" />
     <Compile Include="MainSite.VS12.cs" />
+    <Compile Include="MainSite.VS14Only.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

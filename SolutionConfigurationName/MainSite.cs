@@ -183,5 +183,39 @@ namespace SolutionConfigurationName
         {
             get { return _DTE2; }
         }
+
+        public static DTEVersion Version
+        {
+            get
+            {
+                return GetVersion(_DTE2.Version);
+            }
+        }
+
+        public static DTEVersion GetVersion(String str)
+        {
+            switch (str)
+            {
+                case "10.0":
+                    return DTEVersion.VS10;
+                case "11.0":
+                    return DTEVersion.VS11;
+                case "12.0":
+                    return DTEVersion.VS12;
+                case "14.0":
+                    return DTEVersion.VS14;
+                default:
+                    throw new Exception();
+            }
+        }
+    }
+
+    public enum DTEVersion
+    {
+        Latest,
+        VS10,
+        VS11,
+        VS12,
+        VS14
     }
 }
