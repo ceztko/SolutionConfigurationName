@@ -1,3 +1,7 @@
+Solution Configuration Name 1.0.5
+---------------------------------
+  * Support for Visual Studio 2015
+
 Solution Configuration Name 1.0.4
 ---------------------------------
   * Safer projects marked as dirty
