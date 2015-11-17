@@ -47,8 +47,9 @@ namespace SolutionConfigurationName
                 if (_VCProjectCollectionLoaded)
                     return;
 
+                // Don't test for instance of VCProject, doesn't work for plugin loaded in VS2015
                 DTEProject project = hiearchy.GetProject();
-                if (project == null || !(project.Object is VCProject))
+                if (project == null || project.GetKindGuid() != VSConstants.UICONTEXT.VCProject_guid)
                     return;
 
                 SolutionConfiguration2 configuration =
@@ -86,7 +87,8 @@ namespace SolutionConfigurationName
         {
             foreach (DTEProject project in _DTE2.Solution.Projects.AllProjects())
             {
-                if (!(project.Object is VCProject))
+                // Don't test for instance of VCProject, doesn't work for plugin loaded in VS2015
+                if (project.GetKindGuid() != VSConstants.UICONTEXT.VCProject_guid)
                     continue;
 
                 await SetVCProjectsConfigurationProperties(project, configurationName, platformName);

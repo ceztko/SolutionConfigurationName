@@ -57,11 +57,6 @@ namespace SolutionConfigurationName
                 yield return project;
         }
 
-        public static VCProject GetVCProject(this Project project)
-        {
-            return project.Object as VCProject;
-        }
-
         public static Lazy<T, IDictionary<string, object>> FindExport<T>(IEnumerable<Lazy<T, IDictionary<string, object>>> collection, string metadataName, string metadataValue)
         {
             foreach (Lazy<T, IDictionary<string, object>> lazy in collection)
@@ -82,6 +77,17 @@ namespace SolutionConfigurationName
             }
 
             return null;
+        }
+
+        public static VCProject GetVCProject(this Project project)
+        {
+            return project.Object as VCProject;
+        }
+
+
+        public static Guid GetKindGuid(this Project project)
+        {
+            return Guid.Parse(project.Kind);
         }
     }
 }
