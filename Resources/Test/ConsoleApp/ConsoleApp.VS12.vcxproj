@@ -92,7 +92,7 @@
     <ClCompile Include="Win32Project1.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\LibDll\LibDll.vcxproj">
+    <ProjectReference Include="..\LibDll\LibDll.VS12.vcxproj">
       <Project>{2f5a9193-e1af-46f9-9fe0-76422c77fc9e}</Project>
     </ProjectReference>
   </ItemGroup>

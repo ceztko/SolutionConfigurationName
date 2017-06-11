@@ -1,15 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.12
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ConsoleApp", "ConsoleApp\ConsoleApp.vcxproj", "{4E6DB4CF-9A16-4397-9B4E-FC3A998D72E8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ConsoleApp", "ConsoleApp\ConsoleApp.VS15.vcxproj", "{4E6DB4CF-9A16-4397-9B4E-FC3A998D72E8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LibDll", "LibDll\LibDll.vcxproj", "{2F5A9193-E1AF-46F9-9FE0-76422C77FC9E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LibDll", "LibDll\LibDll.VS15.vcxproj", "{2F5A9193-E1AF-46F9-9FE0-76422C77FC9E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{96498FD1-B644-416F-96B2-87D1E9F554ED}"
 	ProjectSection(SolutionItems) = preProject
-		Test.txt = Test.txt
+		..\Test.txt = ..\Test.txt
 	EndProjectSection
 EndProject
 Global
