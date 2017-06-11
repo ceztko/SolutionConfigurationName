@@ -46,7 +46,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\targetVS15\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;VS12</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;VS12;VS15</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -83,7 +83,6 @@
     </Reference>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem.V12Only, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\Resources\Deps\Microsoft.VisualStudio.ProjectSystem.V12Only.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
       <Aliases>VS12</Aliases>
       <Private>False</Private>
     </Reference>
@@ -97,20 +96,20 @@
     </Reference>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem.VS.V12Only, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\Resources\Deps\Microsoft.VisualStudio.ProjectSystem.VS.V12Only.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
       <Aliases>VS12</Aliases>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem.VS.V14Only, Version=14.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\Resources\Deps\Microsoft.VisualStudio.ProjectSystem.VS.V14Only.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
       <Aliases>VS14</Aliases>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.Shell.12.0">
       <HintPath>..\Resources\Deps\Microsoft.VisualStudio.Shell.12.0.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.VisualStudio.Shell.Framework, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.Shell.Framework, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="Microsoft.VisualStudio.Shell.Interop" />
     <Reference Include="Microsoft.VisualStudio.Shell.Interop.8.0" />
     <Reference Include="Microsoft.VisualStudio.Shell.Interop.9.0" />
