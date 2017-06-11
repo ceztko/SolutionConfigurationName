@@ -5,6 +5,7 @@
 *.ncb
 *.sdf
 *.pch
+.vs/
 Debug/
 Release/
 ipch/
