@@ -24,11 +24,6 @@ using DTEProject = EnvDTE.Project;
 
 namespace SolutionConfigurationName
 {
-#if DEBUG
-    extern alias VC;
-    using VCProjectShim = VC::Microsoft.VisualStudio.Project.VisualC.VCProjectEngine.VCProjectShim;
-#endif
-
     partial class MainSite
     {
         private static volatile bool _VCProjectCollectionLoaded;
@@ -77,6 +72,11 @@ namespace SolutionConfigurationName
                 case DTEVersion.VS14:
                     await SetVCProjectsConfigurationProperties14(project, configurationName, platformName);
                     break;
+#if VS15
+                case DTEVersion.VS15:
+                    await SetVCProjectsConfigurationProperties15(project, configurationName, platformName);
+                    break;
+#endif
                 default:
                     throw new Exception();
             }
@@ -99,11 +99,11 @@ namespace SolutionConfigurationName
 #if DEBUG
             foreach (DTEProject project in _DTE2.Solution.Projects.AllProjects())
             {
-                VCProjectShim shim = project.Object as VCProjectShim;
-                if (shim == null)
+                VCProject vcproject = project.Object as VCProject;
+                if (vcproject == null)
                     continue;
 
-                bool test = shim.IsDirty;
+                bool test = vcproject.IsDirty;
             }
 #endif
         }

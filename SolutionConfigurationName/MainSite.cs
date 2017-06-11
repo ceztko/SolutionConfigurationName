@@ -204,6 +204,8 @@ namespace SolutionConfigurationName
                     return DTEVersion.VS12;
                 case "14.0":
                     return DTEVersion.VS14;
+                case "15.0":
+                    return DTEVersion.VS15;
                 default:
                     throw new Exception();
             }
@@ -216,6 +218,7 @@ namespace SolutionConfigurationName
         VS10,
         VS11,
         VS12,
-        VS14
+        VS14,
+        VS15,
     }
 }
