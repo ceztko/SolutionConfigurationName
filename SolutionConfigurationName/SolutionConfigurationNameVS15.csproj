@@ -36,7 +36,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SolutionConfigurationName</RootNamespace>
-    <AssemblyName>SolutionConfigurationNameVS15</AssemblyName>
+    <AssemblyName>SolutionConfigurationName</AssemblyName>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Key.snk</AssemblyOriginatorKeyFile>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
