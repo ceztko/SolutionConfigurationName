@@ -7,6 +7,7 @@ using Microsoft.Build.Evaluation;
 using System.Runtime.CompilerServices;
 using ATask = System.Threading.Tasks.Task;
 using DTEProject = EnvDTE.Project;
+using MsBuildProject = Microsoft.Build.Evaluation.Project;
 
 namespace SolutionConfigurationName
 {
@@ -27,11 +28,10 @@ namespace SolutionConfigurationName
 
             using (ProjectWriteLockReleaser releaser = await service.WriteLockAsync())
             {
-                ProjectCollection collection = releaser.ProjectCollection;
+                ConfiguredProject configuredProject = await unconfiguredProject.GetSuggestedConfiguredProjectAsync();
+                MsBuildProject buildProject = await releaser.GetProjectAsync(configuredProject);
 
-                ConfigureCollection(collection, configurationName, platformName);
-
-                _VCProjectCollectionLoaded = true;
+                ConfigureProject(buildProject, configurationName, platformName);
 
                 // The following was present in the NuGet code: it seesms unecessary,
                 // as the lock it's release anyway after the using block (check

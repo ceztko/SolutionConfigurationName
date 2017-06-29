@@ -81,7 +81,7 @@ namespace SolutionConfigurationName
             ProjectCollection global = ProjectCollection.GlobalProjectCollection;
             ConfigureCollection(global, configurationName, platformName);
 #if VS12
-            SetVCProjectsConfigurationProperties(configurationName, platformName, projectsToInvalidate);
+            SetVCProjectsConfigurationProperties(configurationName, platformName);
 #endif
 
             InvalidateProjects(projectsToInvalidate);
@@ -110,9 +110,11 @@ namespace SolutionConfigurationName
             }
         }
 
+        /// <summary>Configure ProjectCollection is still valid for C# projects</summary>
         private static void ConfigureCollection(ProjectCollection collection,
             string configurationName, string platformName)
         {
+            // NB: Don't disable MarkAsDirty here, it's needed for later re-evaluation
             collection.SkipEvaluation = true;
 
             collection.SetGlobalProperty(SOLUTION_CONFIGURATION_MACRO, configurationName);
@@ -120,7 +122,21 @@ namespace SolutionConfigurationName
 
             collection.SkipEvaluation = false;
         }
-        
+
+        /// <summary>Configure the project is necessary for C++ projects</summary>
+        private static void ConfigureProject(BuildProject project,
+            string configurationName, string platformName)
+        {
+            // NB: Don't disable MarkAsDirty here, it's needed for later re-evaluation
+            project.SkipEvaluation = true;
+
+            project.SetGlobalProperty(SOLUTION_CONFIGURATION_MACRO, configurationName);
+            project.SetGlobalProperty(SOLUTION_PLATFORM_MACRO, platformName);
+
+            project.SkipEvaluation = false;
+            project.ReevaluateIfNecessary();
+        }
+
         // Visual Studio doesn't invalidate build objects just by changing global
         // properties. When project build configuration is the same when switching
         // solution configuration we need to invalidate them manually

@@ -26,12 +26,10 @@ namespace SolutionConfigurationName
 {
     partial class MainSite
     {
-        private static volatile bool _VCProjectCollectionLoaded;
         private static AsyncLock _lock;
 
         static MainSite()
         {
-            _VCProjectCollectionLoaded = false;
             _lock = new AsyncLock();
         }
 
@@ -39,9 +37,6 @@ namespace SolutionConfigurationName
         {
             using (await _lock.LockAsync())
             {
-                if (_VCProjectCollectionLoaded)
-                    return;
-
                 // Don't test for instance of VCProject, doesn't work for plugin loaded in VS2015
                 DTEProject project = hiearchy.GetProject();
                 if (project == null || project.GetKindGuid() != VSConstants.UICONTEXT.VCProject_guid)
@@ -82,8 +77,7 @@ namespace SolutionConfigurationName
             }
         }
 
-        private static async void SetVCProjectsConfigurationProperties(string configurationName, string platformName,
-            List<DTEProject> projectsToInvalidate)
+        private static async void SetVCProjectsConfigurationProperties(string configurationName, string platformName)
         {
             foreach (DTEProject project in _DTE2.Solution.Projects.AllProjects())
             {
@@ -92,8 +86,6 @@ namespace SolutionConfigurationName
                     continue;
 
                 await SetVCProjectsConfigurationProperties(project, configurationName, platformName);
-
-                break;
             }
 
 #if DEBUG
