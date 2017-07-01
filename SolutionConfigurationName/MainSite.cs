@@ -35,6 +35,7 @@ namespace SolutionConfigurationName
         private const string SOLUTION_PLATFORM_MACRO = "SolutionPlatform";
 
         private static DTE2 _DTE2;
+        private static DTEVersion _Version;
         private static UpdateSolutionEvents _UpdateSolutionEvents;
         private static SolutionEvents _SolutionEvents;
 
@@ -45,6 +46,7 @@ namespace SolutionConfigurationName
             base.Initialize();
             IVsExtensibility extensibility = GetService<IVsExtensibility>();
             _DTE2 = (DTE2)extensibility.GetGlobalsObject(null).DTE;
+            _Version = GetVersion(_DTE2.Version);
 
             IVsSolution solution = GetService<SVsSolution>() as IVsSolution;
             IVsCfgProvider2 test = solution as IVsCfgProvider2;
@@ -54,9 +56,11 @@ namespace SolutionConfigurationName
             hr = solution.AdviseSolutionEvents(_SolutionEvents, out pdwCookie);
             Marshal.ThrowExceptionForHR(hr);
 
-            IVsSolutionBuildManager3 vsSolutionBuildManager = (IVsSolutionBuildManager3)GetService<SVsSolutionBuildManager>();
             _UpdateSolutionEvents = new UpdateSolutionEvents();
-            hr = vsSolutionBuildManager.AdviseUpdateSolutionEvents3(_UpdateSolutionEvents, out pdwCookie);
+            var vsSolutionBuildManager = GetService<SVsSolutionBuildManager>();
+            hr = (vsSolutionBuildManager as IVsSolutionBuildManager3).AdviseUpdateSolutionEvents3(_UpdateSolutionEvents, out pdwCookie);
+            Marshal.ThrowExceptionForHR(hr);
+            hr = (vsSolutionBuildManager as IVsSolutionBuildManager2).AdviseUpdateSolutionEvents(_UpdateSolutionEvents, out pdwCookie);
             Marshal.ThrowExceptionForHR(hr);
         }
         public static void SetConfigurationProperties(string previousConfiguration)
@@ -68,20 +72,13 @@ namespace SolutionConfigurationName
 
             List<DTEProject> projectsToInvalidate = DetermineProjectsToInvalidate(previousConfiguration);
 
-            List<DTEProject> projectsToInvalidateSaved = new List<DTEProject>();
-            foreach(DTEProject project in projectsToInvalidate)
-            {
-                if (project.Saved)
-                    projectsToInvalidateSaved.Add(project);
-            }
-
             string configurationName = configuration.Name;
             string platformName = configuration.PlatformName;
 
             ProjectCollection global = ProjectCollection.GlobalProjectCollection;
             ConfigureCollection(global, configurationName, platformName);
 #if VS12
-            SetVCProjectsConfigurationProperties(configurationName, platformName, projectsToInvalidate);
+            SetVCProjectsConfigurationProperties(configurationName, platformName);
 #endif
 
             InvalidateProjects(projectsToInvalidate);
@@ -186,10 +183,7 @@ namespace SolutionConfigurationName
 
         public static DTEVersion Version
         {
-            get
-            {
-                return GetVersion(_DTE2.Version);
-            }
+            get { return _Version; }
         }
 
         public static DTEVersion GetVersion(String str)

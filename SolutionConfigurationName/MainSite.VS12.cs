@@ -64,7 +64,7 @@ namespace SolutionConfigurationName
         private static async ATask SetVCProjectsConfigurationProperties(DTEProject project,
             string configurationName, string platformName)
         {
-            switch (Version)
+            switch (_Version)
             {
                 case DTEVersion.VS12:
                     await SetVCProjectsConfigurationProperties12(project, configurationName, platformName);
@@ -82,8 +82,7 @@ namespace SolutionConfigurationName
             }
         }
 
-        private static async void SetVCProjectsConfigurationProperties(string configurationName, string platformName,
-            List<DTEProject> projectsToInvalidate)
+        private static async void SetVCProjectsConfigurationProperties(string configurationName, string platformName)
         {
             foreach (DTEProject project in _DTE2.Solution.Projects.AllProjects())
             {
