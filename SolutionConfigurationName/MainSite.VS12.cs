@@ -74,7 +74,9 @@ namespace SolutionConfigurationName
                     break;
 #if VS15
                 case DTEVersion.VS15:
-                    await SetVCProjectsConfigurationProperties15(project, configurationName, platformName);
+                    // Pulling support for C++ projects on VS2017 because of bugs
+                    // https://developercommunity.visualstudio.com/content/problem/75339/extensions-setting-global-property-on-c-projectcol.html
+                    //await SetVCProjectsConfigurationProperties15(project, configurationName, platformName);
                     break;
 #endif
                 default:
