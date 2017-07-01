@@ -26,7 +26,7 @@ namespace SolutionConfigurationName
 {
     partial class MainSite
     {
-        private static volatile bool _VCProjectCollectionLoaded;
+        private static bool _VCProjectCollectionLoaded;
         private static AsyncLock _lock;
 
         static MainSite()
