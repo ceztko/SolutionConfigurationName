@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) 2013-2014 Francesco Pretto
+// This file is subject to the MIT license
+
+using System;
 using Microsoft.Build.Evaluation;
 using System.Runtime.CompilerServices;
 using ATask = System.Threading.Tasks.Task;

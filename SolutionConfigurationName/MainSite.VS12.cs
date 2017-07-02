@@ -37,6 +37,9 @@ namespace SolutionConfigurationName
 
         public static async void EnsureVCProjectsPropertiesConfigured(IVsHierarchy hiearchy)
         {
+            if (VersionGreaterEqualTo(DTEVersion.VS15))
+                return;
+
             using (await _lock.LockAsync())
             {
                 if (_VCProjectCollectionLoaded)
@@ -72,13 +75,6 @@ namespace SolutionConfigurationName
                 case DTEVersion.VS14:
                     await SetVCProjectsConfigurationProperties14(project, configurationName, platformName);
                     break;
-#if VS15
-                case DTEVersion.VS15:
-                    // Pulling support for C++ projects on VS2017 because of bugs
-                    // https://developercommunity.visualstudio.com/content/problem/75339/extensions-setting-global-property-on-c-projectcol.html
-                    //await SetVCProjectsConfigurationProperties15(project, configurationName, platformName);
-                    break;
-#endif
                 default:
                     throw new Exception();
             }

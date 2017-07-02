@@ -71,6 +71,9 @@ namespace SolutionConfigurationName
 
         public int OnBeforeActiveSolutionCfgChange(IVsCfg pOldActiveSlnCfg, IVsCfg pNewActiveSlnCfg)
         {
+            string solutionConfiguration;
+            pNewActiveSlnCfg.get_DisplayName(out solutionConfiguration);
+            MainSite.BeforeChangeActiveSolutionConfiguration(solutionConfiguration);
             return VSConstants.S_OK;
         }
     }

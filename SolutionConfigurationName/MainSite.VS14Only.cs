@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿// Copyright (c) 2013-2014 Francesco Pretto
+// This file is subject to the MIT license
+
+using System;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
 using ATask = System.Threading.Tasks.Task;
 using DTEProject = EnvDTE.Project;

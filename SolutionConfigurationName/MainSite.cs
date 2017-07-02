@@ -28,6 +28,7 @@ namespace SolutionConfigurationName
     [Guid(GuidList.guidSolutionConfigurationNamePkgString)]
     //[ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExists_string)] // Load if solution exists
     [ProvideAutoLoad(VSConstants.UICONTEXT.NoSolution_string)]       // Load if no solution
+    [ProvideBindingPath]
     public sealed partial class MainSite : Package                   // Sealed is needed in VS2013
     {
         private const string SCN_DUMMY_PROPERTY = "__SCNDummy";
@@ -62,9 +63,16 @@ namespace SolutionConfigurationName
             Marshal.ThrowExceptionForHR(hr);
             hr = (vsSolutionBuildManager as IVsSolutionBuildManager2).AdviseUpdateSolutionEvents(_UpdateSolutionEvents, out pdwCookie);
             Marshal.ThrowExceptionForHR(hr);
+
+            if (VersionGreaterEqualTo(DTEVersion.VS15))
+                LoadMef();
         }
+
         public static void SetConfigurationProperties(string previousConfiguration)
         {
+            if (VersionGreaterEqualTo(DTEVersion.VS15))
+                return;
+
             SolutionConfiguration2 configuration =
                 (SolutionConfiguration2)_DTE2.Solution.SolutionBuild.ActiveConfiguration;
             if (configuration == null)
@@ -82,6 +90,29 @@ namespace SolutionConfigurationName
 #endif
 
             InvalidateProjects(projectsToInvalidate);
+        }
+
+        internal static void BeforeChangeActiveSolutionConfiguration(string soutionConfiguration)
+        {
+            if (VersionLessThan(DTEVersion.VS15))
+                return;
+
+            string configurationName;
+            string platformName;
+            ParseSolutionConfiguration(soutionConfiguration, out configurationName, out platformName);
+#if VS15
+            UpdateSolutionConfigurationMEF(configurationName, platformName);
+#endif
+        }
+
+        private static bool VersionLessThan(DTEVersion version)
+        {
+            return (int)_Version < (int)version;
+        }
+
+        private static bool VersionGreaterEqualTo(DTEVersion version)
+        {
+            return (int)_Version >= (int)version;
         }
 
         private static void InvalidateProjects(IEnumerable<DTEProject> projectsToInvalidate)
@@ -127,9 +158,10 @@ namespace SolutionConfigurationName
             if (previousConfiguration == null)
                 return ret;
 
-            string[] tokens = previousConfiguration.Split('|');
-            string prevSolCfgName = tokens[0];
-            string prevSolCfgPlatform = tokens[1];
+            string prevSolCfgName;
+            string prevSolCfgPlatform;
+            ParseSolutionConfiguration(previousConfiguration, out prevSolCfgName, out prevSolCfgPlatform);
+
 
             SolutionConfiguration prevSolCfg = null;
             foreach (SolutionConfiguration2 solCfg in _DTE2.Solution.SolutionBuild.SolutionConfigurations)
@@ -164,6 +196,13 @@ namespace SolutionConfigurationName
             }
 
             return ret;
+        }
+
+        private static void ParseSolutionConfiguration(string configuration, out string configurationName, out string platformName)
+        {
+            string[] tokens = configuration.Split('|');
+            configurationName = tokens[0];
+            platformName = tokens[1];
         }
 
         private void GetService<T>(out T service)
@@ -208,8 +247,7 @@ namespace SolutionConfigurationName
 
     public enum DTEVersion
     {
-        Latest,
-        VS10,
+        VS10 = 0,
         VS11,
         VS12,
         VS14,
