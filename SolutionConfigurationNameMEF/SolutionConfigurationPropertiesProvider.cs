@@ -12,35 +12,35 @@ using System.Threading.Tasks;
 namespace SolutionConfigurationNameMef
 {
     [Export(typeof(IProjectGlobalPropertiesProvider))]
-    [AppliesTo("VisualC + VCProjectEngineFactory")]
+    [AppliesTo("VisualC + VCProjectEngineFactory")] // Copied from internal VCGlobalPropertiesProvider
     public class SolutionConfigurationPropertiesProvider :
         ProjectValueDataSourceBase<IImmutableDictionary<string, string>>,
         IProjectGlobalPropertiesProvider
     {
+        const string NAME_IDENTITY = "SolutionConfiguration";
+
         private static object _lock;
         private static SolutionConfigurationPropertiesProvider _instance;   // Lock guarded
         private static IImmutableDictionary<string, string> _properties;    // Lock guarded
-        private static long _version;                                       // Lock guarded
+        private static IComparable _version;                                // Lock guarded
+        private static BroadcastBlock<IProjectVersionedValue<IImmutableDictionary<string, string>>> _brodcastBlock; // Lock guarded
 
+        private static IReceivableSourceBlock<IProjectVersionedValue<IImmutableDictionary<string, string>>> _publicBlock;
         private static NamedIdentity _dataSourceKey;
-
-        /// <summary>The block to post to when publishing new values.</summary>
-        private static BroadcastBlock<IProjectVersionedValue<IImmutableDictionary<string, string>>> _brodcastBlock;
-
-        /// <summary>The backing field for the <see cref="SourceBlock"/> property.</summary>
-        private IReceivableSourceBlock<IProjectVersionedValue<IImmutableDictionary<string, string>>> _publicBlock;
 
         static SolutionConfigurationPropertiesProvider()
         {
-            _version = -1;
+            _version = 0L;
             _lock = new object();
             _properties = ImmutableDictionary<string, string>.Empty;
-            _dataSourceKey = new NamedIdentity("SolutionConfiguration");
+            _dataSourceKey = new NamedIdentity(NAME_IDENTITY);
         }
 
+        // The scope is the solution ProjectCollection for VC projects
+        // https://github.com/Microsoft/VSProjectSystem/blob/master/doc/overview/scopes.md
         [ImportingConstructor]
-        protected SolutionConfigurationPropertiesProvider(IProjectServices services)
-            : base(services)
+        protected SolutionConfigurationPropertiesProvider(IProjectService service)
+            : base(service.Services)
         {
             lock (_lock)
             {
@@ -52,9 +52,7 @@ namespace SolutionConfigurationNameMef
         {
             lock (_lock)
             {
-                _properties = ImmutableDictionary<string, string>.Empty.AddRange(new KeyValuePair<string, string>[] {
-                        new KeyValuePair<string, string>("SolutionConfiguration", configurationName),
-                        new KeyValuePair<string, string>("SolutionPlatform", platformName)});
+                _properties = GetDictionary(configurationName, platformName);
 
                 if (_instance != null)
                     _instance.PostSolutionConfiguration();
@@ -63,13 +61,18 @@ namespace SolutionConfigurationNameMef
 
         private void PostSolutionConfiguration()
         {
-            _version++;
-            bool test = _brodcastBlock.Post(
+            _version = (long)_version + 1;
+            postSolutionConfiguration();
+        }
+
+        private void postSolutionConfiguration()
+        {
+            _brodcastBlock.Post(
                 new ProjectVersionedValue<IImmutableDictionary<string, string>>(_properties,
                     ImmutableDictionary<NamedIdentity, IComparable>.Empty.Add(_dataSourceKey, _version)));
         }
 
-        public override NamedIdentity DataSourceKey => _dataSourceKey;
+        public override NamedIdentity DataSourceKey => ProjectDataSources.SolutionGlobalProperties;// _dataSourceKey;
 
         public override IComparable DataSourceVersion
         {
@@ -93,23 +96,25 @@ namespace SolutionConfigurationNameMef
             }
         }
 
+        static IImmutableDictionary<string, string> GetDictionary(string configurationName, string platformName)
+        {
+            var builder = Microsoft.VisualStudio.ProjectSystem.Empty.PropertiesMap.ToBuilder();
+            builder.Add("SolutionConfiguration", configurationName);
+            builder.Add("SolutionPlatform", platformName);
+            return builder.ToImmutable();
+        }
+
         protected override void Initialize()
         {
             base.Initialize();
+
             lock (_lock)
             {
-                if (_brodcastBlock == null)
-                {
-                    _brodcastBlock = new BroadcastBlock<IProjectVersionedValue<IImmutableDictionary<string, string>>>(null,
-                    new DataflowBlockOptions() { NameFormat = "SolutionConfiguration: {1}" });
+                _brodcastBlock = new BroadcastBlock<IProjectVersionedValue<IImmutableDictionary<string, string>>>(null,
+                    new DataflowBlockOptions() { NameFormat = NAME_IDENTITY + ": {1}" });
+                _publicBlock = _brodcastBlock.SafePublicize();
 
-                    _publicBlock = _brodcastBlock.SafePublicize();
-                    PostSolutionConfiguration();
-                }
-                else
-                {
-                    _publicBlock = _brodcastBlock.SafePublicize();
-                }
+                postSolutionConfiguration();
             }
         }
     }
