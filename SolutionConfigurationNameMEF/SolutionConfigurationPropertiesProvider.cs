@@ -72,7 +72,7 @@ namespace SolutionConfigurationNameMef
                     ImmutableDictionary<NamedIdentity, IComparable>.Empty.Add(_dataSourceKey, _version)));
         }
 
-        public override NamedIdentity DataSourceKey => ProjectDataSources.SolutionGlobalProperties;// _dataSourceKey;
+        public override NamedIdentity DataSourceKey => _dataSourceKey;
 
         public override IComparable DataSourceVersion
         {
