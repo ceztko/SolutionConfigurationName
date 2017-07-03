@@ -35,19 +35,22 @@ namespace SolutionConfigurationName
             _lock = new AsyncLock();
         }
 
-        public static async void EnsureVCProjectsPropertiesConfigured(IVsHierarchy hiearchy)
+        public static async void EnsureVCProjectsPropertiesConfigured(IVsHierarchy hierarchy)
         {
-            if (VersionGreaterEqualTo(DTEVersion.VS15))
+            DTEProject project = hierarchy.GetProject();
+            if (project == null || project.GetKindGuid() != VSConstants.UICONTEXT.VCProject_guid)
                 return;
+
+            if (VersionGreaterEqualTo(DTEVersion.VS15))
+            {
+                // VS2017 needs project to be invalidated to apply the global properties supplied with MEF component
+                InvalidateProject(project);
+                return;
+            }
 
             using (await _lock.LockAsync())
             {
                 if (_VCProjectCollectionLoaded)
-                    return;
-
-                // Don't test for instance of VCProject, doesn't work for plugin loaded in VS2015
-                DTEProject project = hiearchy.GetProject();
-                if (project == null || project.GetKindGuid() != VSConstants.UICONTEXT.VCProject_guid)
                     return;
 
                 SolutionConfiguration2 configuration =
