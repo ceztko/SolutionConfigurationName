@@ -10,7 +10,7 @@ using SolutionConfigurationNameMef;
 
 namespace SolutionConfigurationName
 {
-    partial class MainSite
+    partial class MainSite : IDisposable
     {
         CompositionContainer _mefContainer;
 
@@ -22,13 +22,18 @@ namespace SolutionConfigurationName
 
             //Create a composition container
             _mefContainer = new CompositionContainer(catalog);
-            _mefContainer.ComposeParts(this);
+            _mefContainer.ComposeParts();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         static void UpdateSolutionConfigurationMEF(string configurationName, string platformName)
         {
             SolutionConfigurationPropertiesProvider.SetSolutionConfiguration(configurationName, platformName);
+        }
+
+        public void Dispose()
+        {
+            _mefContainer.Dispose();
         }
     }
 }
