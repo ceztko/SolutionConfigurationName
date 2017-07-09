@@ -24,7 +24,7 @@ namespace SolutionConfigurationName
             // Contrary to what Microsoft documentation seems to allude, this is really
             // the first syncronous event that gets fired when Solution update begins,
             // and not UpdateSolution_StartUpdate 
-            
+            MainSite.WaitSolutionConfigurationUpdate();
             return VSConstants.S_OK;
         }
 

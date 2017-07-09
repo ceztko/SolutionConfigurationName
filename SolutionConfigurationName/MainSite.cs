@@ -35,6 +35,7 @@ namespace SolutionConfigurationName
         private const string SOLUTION_CONFIGURATION_MACRO = "SolutionConfiguration";
         private const string SOLUTION_PLATFORM_MACRO = "SolutionPlatform";
 
+        private static object _updateLock;
         private static DTE2 _DTE2;
         private static DTEVersion _Version;
         private static UpdateSolutionEvents _UpdateSolutionEvents;
@@ -46,6 +47,7 @@ namespace SolutionConfigurationName
         protected override void Initialize()
         {
             base.Initialize();
+            _updateLock = new object();
             IVsExtensibility extensibility = GetService<IVsExtensibility>();
             _DTE2 = (DTE2)extensibility.GetGlobalsObject(null).DTE;
             _Version = GetVersion(_DTE2.Version);
@@ -69,7 +71,23 @@ namespace SolutionConfigurationName
                 LoadMef();
         }
 
+        public static void WaitSolutionConfigurationUpdate()
+        {
+            lock (_updateLock)
+            {
+                // Do nothing
+            }
+        }
+
         public static void SetConfigurationProperties(string previousConfiguration)
+        {
+            lock (_updateLock)
+            {
+                setConfigurationProperties(previousConfiguration);
+            }
+        }
+
+        private static void setConfigurationProperties(string previousConfiguration)
         {
             SolutionConfiguration2 configuration =
                 (SolutionConfiguration2)_DTE2.Solution.SolutionBuild.ActiveConfiguration;

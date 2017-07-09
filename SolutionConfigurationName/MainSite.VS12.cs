@@ -26,13 +26,13 @@ namespace SolutionConfigurationName
 {
     partial class MainSite
     {
-        private static bool _VCProjectCollectionLoaded;
-        private static AsyncLock _lock;
+        private static AsyncLock _VCLock;
+        private static bool _VCProjectCollectionLoaded;     // Lock guarded
 
         static MainSite()
         {
             _VCProjectCollectionLoaded = false;
-            _lock = new AsyncLock();
+            _VCLock = new AsyncLock();
         }
 
         public static async void EnsureVCProjectsPropertiesConfigured(IVsHierarchy hierarchy)
@@ -48,7 +48,7 @@ namespace SolutionConfigurationName
                 return;
             }
 
-            using (await _lock.LockAsync())
+            using (await _VCLock.LockAsync())
             {
                 if (_VCProjectCollectionLoaded)
                     return;
