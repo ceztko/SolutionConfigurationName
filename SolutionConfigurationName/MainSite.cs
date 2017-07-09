@@ -149,13 +149,21 @@ namespace SolutionConfigurationName
         // it has to recompile the project when switching from Release to
         // Debug. Understand if this is a bug or find a better way to ensure
         // the VCProject is marked dirty. Check Resources\Test project
-        private static void InvalidateProject(DTEProject project)
+        private static void InvalidateProject(DTEProject project, bool save = true)
         {
             project.Globals[SCN_DUMMY_PROPERTY] = SCN_DUMMY_PROPERTY;
-            // The following is needed to truly invalidate the project
-            project.Globals.VariablePersists[SCN_DUMMY_PROPERTY] = true;
-            project.Globals.VariablePersists[SCN_DUMMY_PROPERTY] = false;
-            project.Save();
+            if (save)
+            {
+                // The following is needed to truly invalidate the project
+                // when switching configuration
+                project.Globals.VariablePersists[SCN_DUMMY_PROPERTY] = true;
+                project.Globals.VariablePersists[SCN_DUMMY_PROPERTY] = false;
+                project.Save();
+            }
+            else
+            {
+                project.Globals.VariablePersists[SCN_DUMMY_PROPERTY] = false;
+            }
 
             /* NOTE: This alternative way doesn't work
             IVsHierarchy hierarchy;

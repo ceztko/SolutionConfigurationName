@@ -43,8 +43,12 @@ namespace SolutionConfigurationName
 
             if (VersionGreaterEqualTo(DTEVersion.VS15))
             {
-                // VS2017 needs project to be invalidated to apply the global properties supplied with MEF component
-                InvalidateProject(project);
+                // VS2017 needs project to be invalidated after loaded to apply the
+                // global properties, supplied with MEF component. Trying to save the
+                // project at this point may result in a crash if the project is inside
+                // a Solution Folder (why???). Fortunately, at this point to invalidate
+                // the project is not neeeded to save
+                InvalidateProject(project, false);
                 return;
             }
 
