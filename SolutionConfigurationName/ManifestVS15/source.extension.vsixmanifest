@@ -24,6 +24,6 @@
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="SolutionConfigurationNameMEF" Path="|SolutionConfigurationNameMEF|" />
   </Assets>
   <Prerequisites>
-    <Prerequisite Id="Microsoft.Net.Component.4.6.1.SDK" Version="[15.0.26208.0,16.0)" DisplayName=".NET Framework 4.6.1 SDK" />
+    <Prerequisite Id="Microsoft.Component.MSBuild" Version="[15.0.26208.0,16.0)" DisplayName="MSBuild" />
   </Prerequisites>
 </PackageManifest>
